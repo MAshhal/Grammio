@@ -1,0 +1,49 @@
+# Gradle / Kotlin
+.gradle/
+.kotlin/
+build/
+**/build/
+!src/**/build/
+xcuserdata
+
+# Local machine config
+local.properties
+.env
+.env.*
+.mcp.json
+
+# IDE
+.idea
+*.iml
+
+# Android generated artifacts
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Generated platform database copies
+core/database/src/androidMain/assets/databases/
+core/database/src/desktopMain/resources/databases/
+
+# Signing / secrets
+*.jks
+*.keystore
+*.p12
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# iOS
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+
+# Web
+node_modules/
