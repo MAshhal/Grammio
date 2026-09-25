@@ -14,6 +14,18 @@
     <string name="action_open_settings">Open settings</string>
     <string name="copied_to_clipboard">Copied</string>
 
+    <!-- Settings -->
+    <string name="settings_how_to_use">Select text in any app, open the selection menu (⋮ or “More”), and tap Grammio to fix, rewrite, summarize or translate it.</string>
+    <string name="settings_api_key_title">Gemini API key</string>
+    <string name="settings_key_saved">Key saved on this device</string>
+    <string name="settings_key_missing">No key yet. Grammio needs one to work.</string>
+    <string name="settings_enter_key">Paste your API key</string>
+    <string name="settings_replace_key">Paste a new key to replace it</string>
+    <string name="settings_get_key">Get a free key at aistudio.google.com</string>
+    <string name="settings_privacy_note">Your key is encrypted with the Android Keystore and never leaves this device except to call Gemini. Selected text is sent to Gemini only when you pick a transformation and is never stored by Grammio.</string>
+    <string name="action_save">Save</string>
+    <string name="action_remove_key">Remove key</string>
+
     <!-- Transformations -->
     <string name="transformation_fix_grammar">Fix grammar</string>
     <string name="transformation_rephrase">Rephrase</string>

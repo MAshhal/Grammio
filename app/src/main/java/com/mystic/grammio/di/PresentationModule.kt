@@ -1,10 +1,13 @@
 package com.mystic.grammio.di
 
 import com.mystic.grammio.feature.process.ProcessTextViewModel
+import com.mystic.grammio.feature.settings.SettingsViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+import org.koin.plugin.module.dsl.viewModel
 
 val presentationModule = module {
     // Classic DSL: this ViewModel takes a runtime parameter (the parsed Intent) via parametersOf.
     viewModel { params -> ProcessTextViewModel(input = params.get(), transformText = get()) }
+    viewModel<SettingsViewModel>()
 }
