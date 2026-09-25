@@ -1,7 +1,6 @@
 package com.mystic.grammio.data.llm.gemini
 
 import co.touchlab.kermit.Logger
-import com.mystic.grammio.data.apikey.ApiKeyProvider
 import com.mystic.grammio.data.llm.LlmDataSource
 import com.mystic.grammio.data.llm.LlmPrompt
 import com.mystic.grammio.data.llm.gemini.dto.GeminiErrorResponseDto
@@ -26,35 +25,32 @@ import kotlin.coroutines.cancellation.CancellationException
  * Google Gemini via the REST `generateContent` API, authenticated with the user's own key.
  * Only performs the HTTP call; building and reading payloads is left to the mappers.
  */
-class GeminiDataSource(
-    private val httpClient: HttpClient,
-    private val apiKeyProvider: ApiKeyProvider,
-) : LlmDataSource {
+class GeminiDataSource(private val httpClient: HttpClient) : LlmDataSource {
 
     private val log = Logger.withTag("Gemini")
 
-    override suspend fun generate(prompt: LlmPrompt): Outcome<String, TransformError> {
-        val apiKey = apiKeyProvider.apiKey() ?: return Outcome.Failure(TransformError.MissingApiKey)
-        return try {
-            val response = httpClient.post("$BASE_URL/models/$MODEL:generateContent") {
-                // Header rather than ?key= so the key never appears in URLs or logs.
-                header(API_KEY_HEADER, apiKey)
-                contentType(ContentType.Application.Json)
-                setBody(GeminiRequestMapper.map(prompt, MAX_OUTPUT_TOKENS))
-            }
-            if (response.status.isSuccess()) {
-                GeminiResponseMapper.map(response.body())
-            } else {
-                httpFailure(response)
-            }
-        } catch (e: HttpRequestTimeoutException) {
-            // Caught before CancellationException, which some Ktor versions use as its supertype.
-            exceptionFailure(e)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            exceptionFailure(e)
+    override suspend fun generate(
+        prompt: LlmPrompt,
+        apiKey: String,
+    ): Outcome<String, TransformError> = try {
+        val response = httpClient.post("$BASE_URL/models/$MODEL:generateContent") {
+            // Header rather than ?key= so the key never appears in URLs or logs.
+            header(API_KEY_HEADER, apiKey)
+            contentType(ContentType.Application.Json)
+            setBody(GeminiRequestMapper.map(prompt, MAX_OUTPUT_TOKENS))
         }
+        if (response.status.isSuccess()) {
+            GeminiResponseMapper.map(response.body())
+        } else {
+            httpFailure(response)
+        }
+    } catch (e: HttpRequestTimeoutException) {
+        // Caught before CancellationException, which some Ktor versions use as its supertype.
+        exceptionFailure(e)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        exceptionFailure(e)
     }
 
     private suspend fun httpFailure(response: HttpResponse): Outcome.Failure<TransformError> {

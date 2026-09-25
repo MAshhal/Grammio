@@ -24,19 +24,18 @@ class GeminiDataSourceTest {
     private val prompt = LlmPrompt(systemInstruction = "SYSTEM", userText = "<text>\nhi\n</text>", temperature = 0.1)
     private val requests = mutableListOf<HttpRequestData>()
 
-    private fun dataSource(
-        apiKey: String? = "test-key",
-        handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData,
-    ) = GeminiDataSource(
-        httpClient = HttpClientFactory.create(
-            enableLogging = false,
-            engine = MockEngine { request ->
-                requests += request
-                handler(request)
-            },
-        ),
-        apiKeyProvider = { apiKey },
-    )
+    private fun dataSource(handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData) =
+        GeminiDataSource(
+            httpClient = HttpClientFactory.create(
+                enableLogging = false,
+                engine = MockEngine { request ->
+                    requests += request
+                    handler(request)
+                },
+            ),
+        )
+
+    private suspend fun GeminiDataSource.generate() = generate(prompt, apiKey = "test-key")
 
     private fun MockRequestHandleScope.json(
         body: String,
@@ -55,7 +54,7 @@ class GeminiDataSourceTest {
             )
         }
 
-        val result = dataSource.generate(prompt)
+        val result = dataSource.generate()
 
         assertThat(result).isEqualTo(Outcome.Success("Hello world"))
     }
@@ -64,7 +63,7 @@ class GeminiDataSourceTest {
     fun `request uses the key header, model endpoint and prompt`() = runTest {
         val dataSource = dataSource { json("""{"candidates":[{"content":{"parts":[{"text":"ok"}]}}]}""") }
 
-        dataSource.generate(prompt)
+        dataSource.generate()
 
         val request = requests.single()
         assertThat(request.url.toString()).endsWith("/v1beta/models/${GeminiDataSource.MODEL}:generateContent")
@@ -78,14 +77,6 @@ class GeminiDataSourceTest {
     }
 
     @Test
-    fun `missing key fails without a network call`() = runTest {
-        val dataSource = dataSource(apiKey = null) { error("should not be called") }
-
-        assertThat(dataSource.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.MissingApiKey))
-        assertThat(requests).isEmpty()
-    }
-
-    @Test
     fun `invalid key is recognised from the error details`() = runTest {
         val dataSource = dataSource {
             json(
@@ -95,7 +86,7 @@ class GeminiDataSourceTest {
             )
         }
 
-        assertThat(dataSource.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.InvalidApiKey))
+        assertThat(dataSource.generate()).isEqualTo(Outcome.Failure(TransformError.InvalidApiKey))
     }
 
     @Test
@@ -110,7 +101,7 @@ class GeminiDataSourceTest {
         )
         cases.forEach { (status, expected) ->
             val dataSource = dataSource { json("""{"error":{"code":${status.value},"status":"X"}}""", status) }
-            assertThat(dataSource.generate(prompt)).isEqualTo(Outcome.Failure(expected))
+            assertThat(dataSource.generate()).isEqualTo(Outcome.Failure(expected))
         }
     }
 
@@ -119,15 +110,15 @@ class GeminiDataSourceTest {
         val blockedPrompt = dataSource { json("""{"promptFeedback":{"blockReason":"SAFETY"}}""") }
         val safetyFinish = dataSource { json("""{"candidates":[{"finishReason":"SAFETY"}]}""") }
 
-        assertThat(blockedPrompt.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.ContentBlocked))
-        assertThat(safetyFinish.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.ContentBlocked))
+        assertThat(blockedPrompt.generate()).isEqualTo(Outcome.Failure(TransformError.ContentBlocked))
+        assertThat(safetyFinish.generate()).isEqualTo(Outcome.Failure(TransformError.ContentBlocked))
     }
 
     @Test
     fun `empty candidates map to unknown`() = runTest {
         val dataSource = dataSource { json("""{"candidates":[]}""") }
 
-        assertThat(dataSource.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.Unknown))
+        assertThat(dataSource.generate()).isEqualTo(Outcome.Failure(TransformError.Unknown))
     }
 
     @Test
@@ -135,7 +126,7 @@ class GeminiDataSourceTest {
         val timeout = dataSource { throw HttpRequestTimeoutException(it.url.toString(), 30_000) }
         val offline = dataSource { throw IOException("no route") }
 
-        assertThat(timeout.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.Timeout))
-        assertThat(offline.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.Network))
+        assertThat(timeout.generate()).isEqualTo(Outcome.Failure(TransformError.Timeout))
+        assertThat(offline.generate()).isEqualTo(Outcome.Failure(TransformError.Network))
     }
 }
