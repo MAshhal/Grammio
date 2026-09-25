@@ -19,15 +19,15 @@ import java.io.IOException
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
-class GeminiProviderTest {
+class GeminiDataSourceTest {
 
     private val prompt = LlmPrompt(systemInstruction = "SYSTEM", userText = "<text>\nhi\n</text>", temperature = 0.1)
     private val requests = mutableListOf<HttpRequestData>()
 
-    private fun provider(
+    private fun dataSource(
         apiKey: String? = "test-key",
         handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData,
-    ) = GeminiProvider(
+    ) = GeminiDataSource(
         httpClient = HttpClientFactory.create(
             enableLogging = false,
             engine = MockEngine { request ->
@@ -45,7 +45,7 @@ class GeminiProviderTest {
 
     @Test
     fun `success joins candidate text parts and skips thoughts`() = runTest {
-        val provider = provider {
+        val dataSource = dataSource {
             json(
                 """
                 {"candidates":[{"content":{"role":"model","parts":[
@@ -55,19 +55,19 @@ class GeminiProviderTest {
             )
         }
 
-        val result = provider.generate(prompt)
+        val result = dataSource.generate(prompt)
 
         assertThat(result).isEqualTo(Outcome.Success("Hello world"))
     }
 
     @Test
     fun `request uses the key header, model endpoint and prompt`() = runTest {
-        val provider = provider { json("""{"candidates":[{"content":{"parts":[{"text":"ok"}]}}]}""") }
+        val dataSource = dataSource { json("""{"candidates":[{"content":{"parts":[{"text":"ok"}]}}]}""") }
 
-        provider.generate(prompt)
+        dataSource.generate(prompt)
 
         val request = requests.single()
-        assertThat(request.url.toString()).endsWith("/v1beta/models/${GeminiProvider.MODEL}:generateContent")
+        assertThat(request.url.toString()).endsWith("/v1beta/models/${GeminiDataSource.MODEL}:generateContent")
         assertThat(request.url.parameters.names()).isEmpty()
         assertThat(request.headers["x-goog-api-key"]).isEqualTo("test-key")
         val body = request.body.toByteArray().decodeToString()
@@ -79,15 +79,15 @@ class GeminiProviderTest {
 
     @Test
     fun `missing key fails without a network call`() = runTest {
-        val provider = provider(apiKey = null) { error("should not be called") }
+        val dataSource = dataSource(apiKey = null) { error("should not be called") }
 
-        assertThat(provider.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.MissingApiKey))
+        assertThat(dataSource.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.MissingApiKey))
         assertThat(requests).isEmpty()
     }
 
     @Test
     fun `invalid key is recognised from the error details`() = runTest {
-        val provider = provider {
+        val dataSource = dataSource {
             json(
                 """{"error":{"code":400,"message":"API key not valid.","status":"INVALID_ARGUMENT",
                    "details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID"}]}}""",
@@ -95,7 +95,7 @@ class GeminiProviderTest {
             )
         }
 
-        assertThat(provider.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.InvalidApiKey))
+        assertThat(dataSource.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.InvalidApiKey))
     }
 
     @Test
@@ -109,15 +109,15 @@ class GeminiProviderTest {
             HttpStatusCode.NotFound to TransformError.Unknown,
         )
         cases.forEach { (status, expected) ->
-            val provider = provider { json("""{"error":{"code":${status.value},"status":"X"}}""", status) }
-            assertThat(provider.generate(prompt)).isEqualTo(Outcome.Failure(expected))
+            val dataSource = dataSource { json("""{"error":{"code":${status.value},"status":"X"}}""", status) }
+            assertThat(dataSource.generate(prompt)).isEqualTo(Outcome.Failure(expected))
         }
     }
 
     @Test
     fun `blocked prompt and safety finish map to content blocked`() = runTest {
-        val blockedPrompt = provider { json("""{"promptFeedback":{"blockReason":"SAFETY"}}""") }
-        val safetyFinish = provider { json("""{"candidates":[{"finishReason":"SAFETY"}]}""") }
+        val blockedPrompt = dataSource { json("""{"promptFeedback":{"blockReason":"SAFETY"}}""") }
+        val safetyFinish = dataSource { json("""{"candidates":[{"finishReason":"SAFETY"}]}""") }
 
         assertThat(blockedPrompt.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.ContentBlocked))
         assertThat(safetyFinish.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.ContentBlocked))
@@ -125,15 +125,15 @@ class GeminiProviderTest {
 
     @Test
     fun `empty candidates map to unknown`() = runTest {
-        val provider = provider { json("""{"candidates":[]}""") }
+        val dataSource = dataSource { json("""{"candidates":[]}""") }
 
-        assertThat(provider.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.Unknown))
+        assertThat(dataSource.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.Unknown))
     }
 
     @Test
     fun `timeouts and io errors map to timeout and network`() = runTest {
-        val timeout = provider { throw HttpRequestTimeoutException(it.url.toString(), 30_000) }
-        val offline = provider { throw IOException("no route") }
+        val timeout = dataSource { throw HttpRequestTimeoutException(it.url.toString(), 30_000) }
+        val offline = dataSource { throw IOException("no route") }
 
         assertThat(timeout.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.Timeout))
         assertThat(offline.generate(prompt)).isEqualTo(Outcome.Failure(TransformError.Network))

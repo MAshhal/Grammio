@@ -1,6 +1,6 @@
 package com.mystic.grammio.data.transform
 
-import com.mystic.grammio.data.llm.LlmProvider
+import com.mystic.grammio.data.llm.LlmDataSource
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
 import com.mystic.grammio.domain.error.TransformError
@@ -11,7 +11,7 @@ import com.mystic.grammio.domain.result.Outcome
 
 class TextTransformRepositoryImpl(
     private val promptBuilder: PromptBuilder,
-    private val llmProvider: LlmProvider,
+    private val llmDataSource: LlmDataSource,
     private val sanitizer: ModelOutputSanitizer,
 ) : TextTransformRepository {
 
@@ -19,7 +19,7 @@ class TextTransformRepositoryImpl(
         text: String,
         transformation: Transformation,
     ): Outcome<TransformedText, TransformError> =
-        when (val outcome = llmProvider.generate(promptBuilder.build(text, transformation))) {
+        when (val outcome = llmDataSource.generate(promptBuilder.build(text, transformation))) {
             is Outcome.Failure -> outcome
 
             is Outcome.Success -> {

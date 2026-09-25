@@ -8,8 +8,8 @@ import com.mystic.grammio.BuildConfig
 import com.mystic.grammio.data.apikey.ApiKeyProvider
 import com.mystic.grammio.data.apikey.EncryptedApiKeyStore
 import com.mystic.grammio.data.apikey.KeystoreCipher
-import com.mystic.grammio.data.llm.LlmProvider
-import com.mystic.grammio.data.llm.gemini.GeminiProvider
+import com.mystic.grammio.data.llm.LlmDataSource
+import com.mystic.grammio.data.llm.gemini.GeminiDataSource
 import com.mystic.grammio.data.network.HttpClientFactory
 import com.mystic.grammio.data.transform.TextTransformRepositoryImpl
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
@@ -36,7 +36,7 @@ val dataModule = module {
     single<EncryptedApiKeyStore>() binds arrayOf(ApiKeyRepository::class, ApiKeyProvider::class)
 
     // Swap the LLM vendor here.
-    single<GeminiProvider>() bind LlmProvider::class
+    single<GeminiDataSource>() bind LlmDataSource::class
     single<PromptBuilder>()
     single<ModelOutputSanitizer>()
     single<TextTransformRepositoryImpl>() bind TextTransformRepository::class

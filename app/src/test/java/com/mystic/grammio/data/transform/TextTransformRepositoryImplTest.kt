@@ -1,8 +1,8 @@
 package com.mystic.grammio.data.transform
 
 import com.google.common.truth.Truth.assertThat
+import com.mystic.grammio.data.llm.LlmDataSource
 import com.mystic.grammio.data.llm.LlmPrompt
-import com.mystic.grammio.data.llm.LlmProvider
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
 import com.mystic.grammio.domain.error.TransformError
@@ -14,25 +14,25 @@ import org.junit.Test
 
 class TextTransformRepositoryImplTest {
 
-    private class StubProvider(var reply: Outcome<String, TransformError>) : LlmProvider {
+    private class StubLlmDataSource(var reply: Outcome<String, TransformError>) : LlmDataSource {
         var lastPrompt: LlmPrompt? = null
         override suspend fun generate(prompt: LlmPrompt) = reply.also { lastPrompt = prompt }
     }
 
-    private val provider = StubProvider(Outcome.Success("Hello."))
-    private val repository = TextTransformRepositoryImpl(PromptBuilder(), provider, ModelOutputSanitizer())
+    private val llmDataSource = StubLlmDataSource(Outcome.Success("Hello."))
+    private val repository = TextTransformRepositoryImpl(PromptBuilder(), llmDataSource, ModelOutputSanitizer())
 
     @Test
     fun `builds the prompt from the input and wraps the reply`() = runTest {
         val result = repository.transform("helo", Transformation.FixGrammar)
 
         assertThat(result).isEqualTo(Outcome.Success(TransformedText("Hello.", Transformation.FixGrammar)))
-        assertThat(provider.lastPrompt?.userText).contains("helo")
+        assertThat(llmDataSource.lastPrompt?.userText).contains("helo")
     }
 
     @Test
-    fun `provider failures pass through`() = runTest {
-        provider.reply = Outcome.Failure(TransformError.RateLimited)
+    fun `LLM failures pass through`() = runTest {
+        llmDataSource.reply = Outcome.Failure(TransformError.RateLimited)
 
         assertThat(repository.transform("x", Transformation.Shorten))
             .isEqualTo(Outcome.Failure(TransformError.RateLimited))
@@ -40,7 +40,7 @@ class TextTransformRepositoryImplTest {
 
     @Test
     fun `reply that is empty after cleanup is a failure`() = runTest {
-        provider.reply = Outcome.Success("  \"\"  ")
+        llmDataSource.reply = Outcome.Success("  \"\"  ")
 
         assertThat(repository.transform("x", Transformation.Shorten))
             .isEqualTo(Outcome.Failure(TransformError.Unknown))

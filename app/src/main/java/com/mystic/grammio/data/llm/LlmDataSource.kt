@@ -7,12 +7,6 @@ import com.mystic.grammio.domain.result.Outcome
  * Vendor-neutral "prompt in, text out" contract. Everything specific to one LLM vendor (endpoint,
  * auth, DTOs, error codes) stays inside its implementation.
  */
-interface LlmProvider {
+interface LlmDataSource {
     suspend fun generate(prompt: LlmPrompt): Outcome<String, TransformError>
 }
-
-data class LlmPrompt(
-    val systemInstruction: String,
-    val userText: String,
-    val temperature: Double,
-)
