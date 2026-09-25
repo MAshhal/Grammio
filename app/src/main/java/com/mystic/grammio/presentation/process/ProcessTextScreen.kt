@@ -48,6 +48,11 @@ import androidx.compose.ui.unit.dp
 import com.mystic.grammio.R
 import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.Transformation
+import com.mystic.grammio.presentation.process.model.ErrorRecovery
+import com.mystic.grammio.presentation.process.model.TranslationLanguages
+import com.mystic.grammio.presentation.process.model.labelRes
+import com.mystic.grammio.presentation.process.model.message
+import com.mystic.grammio.presentation.process.model.recovery
 import com.mystic.grammio.presentation.theme.GrammioTheme
 import java.util.Locale
 
@@ -134,16 +139,16 @@ private fun LanguagePicker(
     onSelect: (String) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val tags = remember { translationLanguageTags(Locale.getDefault().language) }
+    val tags = remember { TranslationLanguages.tags(Locale.getDefault().language) }
     Box {
         TextButton(onClick = { expanded = true }) {
-            Text(stringResource(R.string.process_target_language, languageDisplayName(selectedTag)))
+            Text(stringResource(R.string.process_target_language, TranslationLanguages.displayName(selectedTag)))
             Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             tags.forEach { tag ->
                 DropdownMenuItem(
-                    text = { Text(languageDisplayName(tag)) },
+                    text = { Text(TranslationLanguages.displayName(tag)) },
                     onClick = {
                         expanded = false
                         onSelect(tag)
