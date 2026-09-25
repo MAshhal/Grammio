@@ -38,7 +38,7 @@ class EncryptedApiKeyLocalDataSource(
     }
 
     override suspend fun write(apiKey: String) {
-        val encrypted = withContext(Dispatchers.Default) { cipher.encrypt(apiKey.trim()) }
+        val encrypted = withContext(Dispatchers.Default) { cipher.encrypt(apiKey) }
         dataStore.edit {
             it[IV] = encrypted.iv
             it[CIPHER_TEXT] = encrypted.cipherText

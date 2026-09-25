@@ -3,6 +3,7 @@ package com.mystic.grammio.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mystic.grammio.domain.repository.ApiKeyRepository
+import com.mystic.grammio.domain.usecase.SaveApiKeyUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,10 +26,13 @@ sealed interface SettingsAction {
 }
 
 /**
- * Talks to [ApiKeyRepository] directly: saving/clearing a key has no application rules yet, so a
- * use case would be a pass-through. Add one when there is logic (e.g. validating the key online).
+ * Saving goes through [SaveApiKeyUseCase] because it has rules. Observing and clearing the key have
+ * none, so they use [ApiKeyRepository] directly rather than through pass-through use cases.
  */
-class SettingsViewModel(private val apiKeyRepository: ApiKeyRepository) : ViewModel() {
+class SettingsViewModel(
+    private val apiKeyRepository: ApiKeyRepository,
+    private val saveApiKey: SaveApiKeyUseCase,
+) : ViewModel() {
 
     private val keyInput = MutableStateFlow("")
 
@@ -40,13 +44,8 @@ class SettingsViewModel(private val apiKeyRepository: ApiKeyRepository) : ViewMo
         when (action) {
             is SettingsAction.KeyInputChanged -> keyInput.value = action.value
 
-            SettingsAction.Save -> {
-                val key = keyInput.value.trim()
-                if (key.isEmpty()) return
-                viewModelScope.launch {
-                    apiKeyRepository.save(key)
-                    keyInput.update { "" }
-                }
+            SettingsAction.Save -> viewModelScope.launch {
+                if (saveApiKey(keyInput.value)) keyInput.update { "" }
             }
 
             SettingsAction.Clear -> viewModelScope.launch { apiKeyRepository.clear() }
