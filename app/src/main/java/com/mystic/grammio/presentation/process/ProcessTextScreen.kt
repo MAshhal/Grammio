@@ -49,6 +49,7 @@ import com.mystic.grammio.R
 import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.presentation.process.model.ErrorRecovery
+import com.mystic.grammio.presentation.process.model.TransformationOptions
 import com.mystic.grammio.presentation.process.model.TranslationLanguages
 import com.mystic.grammio.presentation.process.model.labelRes
 import com.mystic.grammio.presentation.process.model.message
@@ -161,7 +162,7 @@ private fun LanguagePicker(
 
 @Composable
 private fun ResultCard(
-    result: ResultState,
+    result: ResultUiState,
     onAction: (ProcessTextAction) -> Unit,
 ) {
     Card(
@@ -172,21 +173,21 @@ private fun ResultCard(
     ) {
         Box(Modifier.fillMaxWidth().padding(16.dp).animateContentSize()) {
             when (result) {
-                ResultState.Idle -> Text(
+                ResultUiState.Idle -> Text(
                     stringResource(R.string.process_pick_transformation),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
-                ResultState.Loading -> CircularProgressIndicator(
+                ResultUiState.Loading -> CircularProgressIndicator(
                     modifier = Modifier.size(32.dp).align(Alignment.Center),
                 )
 
-                is ResultState.Success -> SelectionContainer {
+                is ResultUiState.Success -> SelectionContainer {
                     Text(result.text, style = MaterialTheme.typography.bodyLarge)
                 }
 
-                is ResultState.Failure -> ErrorContent(result.error, onAction)
+                is ResultUiState.Failure -> ErrorContent(result.error, onAction)
             }
         }
     }
@@ -252,8 +253,9 @@ private fun ProcessTextContentPreview() {
                 originalText = "helo wrld, how r u doing today",
                 canReplace = true,
                 targetLanguageTag = "en",
+                transformations = TransformationOptions.all("en"),
                 selected = Transformation.FixGrammar,
-                result = ResultState.Success("Hello world, how are you doing today?"),
+                result = ResultUiState.Success("Hello world, how are you doing today?"),
             ),
             onAction = {},
         )

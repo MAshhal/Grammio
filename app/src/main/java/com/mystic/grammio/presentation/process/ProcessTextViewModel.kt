@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.result.Outcome
 import com.mystic.grammio.domain.usecase.TransformTextUseCase
+import com.mystic.grammio.presentation.process.model.TransformationOptions
 import java.util.Locale
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -27,6 +28,7 @@ class ProcessTextViewModel(
             originalText = input.text,
             canReplace = input.canReplace,
             targetLanguageTag = defaultTargetLanguageTag,
+            transformations = TransformationOptions.all(defaultTargetLanguageTag),
         ),
     )
     val state: StateFlow<ProcessTextUiState> = _state.asStateFlow()
@@ -59,7 +61,9 @@ class ProcessTextViewModel(
     }
 
     private fun changeTargetLanguage(languageTag: String) {
-        _state.update { it.copy(targetLanguageTag = languageTag) }
+        _state.update {
+            it.copy(targetLanguageTag = languageTag, transformations = TransformationOptions.all(languageTag))
+        }
         // Re-run only if the user is currently looking at a translation.
         if (_state.value.selected is Transformation.Translate) run(Transformation.Translate(languageTag))
     }
@@ -67,11 +71,11 @@ class ProcessTextViewModel(
     /** Starts a transformation, cancelling any in-flight one so only the latest choice wins. */
     private fun run(transformation: Transformation) {
         transformJob?.cancel()
-        _state.update { it.copy(selected = transformation, result = ResultState.Loading) }
+        _state.update { it.copy(selected = transformation, result = ResultUiState.Loading) }
         transformJob = viewModelScope.launch {
             val result = when (val outcome = transformText(_state.value.originalText, transformation)) {
-                is Outcome.Success -> ResultState.Success(outcome.value.text)
-                is Outcome.Failure -> ResultState.Failure(outcome.error)
+                is Outcome.Success -> ResultUiState.Success(outcome.value.text)
+                is Outcome.Failure -> ResultUiState.Failure(outcome.error)
             }
             _state.update { it.copy(result = result) }
         }

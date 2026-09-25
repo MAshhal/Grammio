@@ -36,7 +36,7 @@ class ProcessTextViewModelTest {
         assertThat(state.originalText).isEqualTo("hi")
         assertThat(state.canReplace).isFalse()
         assertThat(state.selected).isNull()
-        assertThat(state.result).isEqualTo(ResultState.Idle)
+        assertThat(state.result).isEqualTo(ResultUiState.Idle)
         assertThat(state.transformations).contains(Transformation.Translate("en"))
     }
 
@@ -45,14 +45,14 @@ class ProcessTextViewModelTest {
         val vm = viewModel()
 
         vm.state.test {
-            assertThat(awaitItem().result).isEqualTo(ResultState.Idle)
+            assertThat(awaitItem().result).isEqualTo(ResultUiState.Idle)
 
             vm.onAction(ProcessTextAction.Select(Transformation.FixGrammar))
 
             val loading = awaitItem()
             assertThat(loading.selected).isEqualTo(Transformation.FixGrammar)
-            assertThat(loading.result).isEqualTo(ResultState.Loading)
-            assertThat(awaitItem().result).isEqualTo(ResultState.Success("FixGrammar:helo wrld"))
+            assertThat(loading.result).isEqualTo(ResultUiState.Loading)
+            assertThat(awaitItem().result).isEqualTo(ResultUiState.Success("FixGrammar:helo wrld"))
         }
     }
 
@@ -63,13 +63,13 @@ class ProcessTextViewModelTest {
 
         vm.onAction(ProcessTextAction.Select(Transformation.Shorten))
         advanceUntilIdle()
-        assertThat(vm.state.value.result).isEqualTo(ResultState.Failure(TransformError.Network))
+        assertThat(vm.state.value.result).isEqualTo(ResultUiState.Failure(TransformError.Network))
 
         repository.nextResult = null
         vm.onAction(ProcessTextAction.Retry)
         advanceUntilIdle()
 
-        assertThat(vm.state.value.result).isEqualTo(ResultState.Success("Shorten:helo wrld"))
+        assertThat(vm.state.value.result).isEqualTo(ResultUiState.Success("Shorten:helo wrld"))
         assertThat(repository.calls.map { it.second })
             .containsExactly(Transformation.Shorten, Transformation.Shorten)
     }
@@ -83,7 +83,7 @@ class ProcessTextViewModelTest {
         advanceUntilIdle()
 
         assertThat(vm.state.value.selected).isEqualTo(Transformation.Professional)
-        assertThat(vm.state.value.result).isEqualTo(ResultState.Success("Professional:helo wrld"))
+        assertThat(vm.state.value.result).isEqualTo(ResultUiState.Success("Professional:helo wrld"))
     }
 
     @Test
@@ -99,7 +99,9 @@ class ProcessTextViewModelTest {
         advanceUntilIdle()
 
         assertThat(vm.state.value.selected).isEqualTo(Transformation.Translate("fr"))
-        assertThat(vm.state.value.result).isEqualTo(ResultState.Success("${Transformation.Translate("fr")}:helo wrld"))
+        assertThat(
+            vm.state.value.result,
+        ).isEqualTo(ResultUiState.Success("${Transformation.Translate("fr")}:helo wrld"))
     }
 
     @Test
