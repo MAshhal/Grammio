@@ -46,7 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mystic.grammio.R
-import com.mystic.grammio.domain.model.TransformError
+import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.presentation.theme.GrammioTheme
 import java.util.Locale

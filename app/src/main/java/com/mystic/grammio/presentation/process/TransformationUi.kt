@@ -4,7 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.mystic.grammio.R
-import com.mystic.grammio.domain.model.TransformError
+import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.Transformation
 import java.util.Locale
 

@@ -1,10 +1,10 @@
 package com.mystic.grammio.testing
 
-import com.mystic.grammio.domain.model.Outcome
-import com.mystic.grammio.domain.model.TransformError
+import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.model.TransformedText
 import com.mystic.grammio.domain.repository.TextTransformRepository
+import com.mystic.grammio.domain.result.Outcome
 import kotlinx.coroutines.delay
 
 /** Records calls and answers with [nextResult] (or an echo) after [latencyMs] of virtual time. */

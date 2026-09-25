@@ -1,10 +1,10 @@
 package com.mystic.grammio.domain.usecase
 
-import com.mystic.grammio.domain.model.Outcome
-import com.mystic.grammio.domain.model.TransformError
+import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.model.TransformedText
 import com.mystic.grammio.domain.repository.TextTransformRepository
+import com.mystic.grammio.domain.result.Outcome
 
 /**
  * Application rules for a transformation that hold regardless of which LLM sits behind the

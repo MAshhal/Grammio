@@ -1,7 +1,7 @@
 package com.mystic.grammio.data.llm
 
-import com.mystic.grammio.domain.model.Outcome
-import com.mystic.grammio.domain.model.TransformError
+import com.mystic.grammio.domain.error.TransformError
+import com.mystic.grammio.domain.result.Outcome
 
 /**
  * Vendor-neutral "prompt in, text out" contract. Everything specific to one LLM vendor (endpoint,

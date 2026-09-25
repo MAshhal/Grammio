@@ -1,6 +1,6 @@
 package com.mystic.grammio.presentation.process
 
-import com.mystic.grammio.domain.model.TransformError
+import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.Transformation
 
 data class ProcessTextUiState(

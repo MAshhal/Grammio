@@ -1,4 +1,4 @@
-package com.mystic.grammio.domain.model
+package com.mystic.grammio.domain.result
 
 /**
  * Success-or-typed-failure result. Unlike [kotlin.Result], the error type is part of the signature,

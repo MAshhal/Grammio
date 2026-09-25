@@ -2,8 +2,8 @@ package com.mystic.grammio.presentation.process
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mystic.grammio.domain.model.Outcome
 import com.mystic.grammio.domain.model.Transformation
+import com.mystic.grammio.domain.result.Outcome
 import com.mystic.grammio.domain.usecase.TransformTextUseCase
 import java.util.Locale
 import kotlinx.coroutines.Job

@@ -4,10 +4,10 @@ import com.google.common.truth.Truth.assertThat
 import com.mystic.grammio.data.llm.LlmPrompt
 import com.mystic.grammio.data.llm.LlmProvider
 import com.mystic.grammio.data.prompt.PromptBuilder
-import com.mystic.grammio.domain.model.Outcome
-import com.mystic.grammio.domain.model.TransformError
+import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.model.TransformedText
+import com.mystic.grammio.domain.result.Outcome
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 

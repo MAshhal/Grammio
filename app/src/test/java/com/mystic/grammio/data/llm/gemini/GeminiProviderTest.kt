@@ -3,8 +3,8 @@ package com.mystic.grammio.data.llm.gemini
 import com.google.common.truth.Truth.assertThat
 import com.mystic.grammio.data.llm.LlmPrompt
 import com.mystic.grammio.data.network.HttpClientFactory
-import com.mystic.grammio.domain.model.Outcome
-import com.mystic.grammio.domain.model.TransformError
+import com.mystic.grammio.domain.error.TransformError
+import com.mystic.grammio.domain.result.Outcome
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond

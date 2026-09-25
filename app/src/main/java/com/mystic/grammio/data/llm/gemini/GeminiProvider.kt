@@ -4,8 +4,8 @@ import co.touchlab.kermit.Logger
 import com.mystic.grammio.data.apikey.ApiKeyProvider
 import com.mystic.grammio.data.llm.LlmPrompt
 import com.mystic.grammio.data.llm.LlmProvider
-import com.mystic.grammio.domain.model.Outcome
-import com.mystic.grammio.domain.model.TransformError
+import com.mystic.grammio.domain.error.TransformError
+import com.mystic.grammio.domain.result.Outcome
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.network.sockets.ConnectTimeoutException

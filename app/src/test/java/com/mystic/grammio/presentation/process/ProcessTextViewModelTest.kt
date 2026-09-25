@@ -2,9 +2,9 @@ package com.mystic.grammio.presentation.process
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.mystic.grammio.domain.model.Outcome
-import com.mystic.grammio.domain.model.TransformError
+import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.Transformation
+import com.mystic.grammio.domain.result.Outcome
 import com.mystic.grammio.domain.usecase.TransformTextUseCase
 import com.mystic.grammio.testing.MainDispatcherRule
 import com.mystic.grammio.testing.RecordingTextTransformRepository

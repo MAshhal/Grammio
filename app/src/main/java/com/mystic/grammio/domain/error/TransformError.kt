@@ -1,4 +1,4 @@
-package com.mystic.grammio.domain.model
+package com.mystic.grammio.domain.error
 
 /**
  * Every way a transformation can fail, expressed in application terms. Data implementations map
