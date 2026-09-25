@@ -5,9 +5,10 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.mystic.grammio.BuildConfig
-import com.mystic.grammio.data.apikey.ApiKeyProvider
-import com.mystic.grammio.data.apikey.EncryptedApiKeyStore
-import com.mystic.grammio.data.apikey.KeystoreCipher
+import com.mystic.grammio.data.apikey.ApiKeyRepositoryImpl
+import com.mystic.grammio.data.apikey.crypto.KeystoreCipher
+import com.mystic.grammio.data.apikey.local.ApiKeyLocalDataSource
+import com.mystic.grammio.data.apikey.local.EncryptedApiKeyLocalDataSource
 import com.mystic.grammio.data.llm.LlmDataSource
 import com.mystic.grammio.data.llm.gemini.GeminiDataSource
 import com.mystic.grammio.data.network.HttpClientFactory
@@ -19,7 +20,6 @@ import com.mystic.grammio.domain.repository.TextTransformRepository
 import io.ktor.client.HttpClient
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.bind
-import org.koin.dsl.binds
 import org.koin.dsl.module
 import org.koin.plugin.module.dsl.single
 
@@ -29,11 +29,12 @@ val dataModule = module {
     // API key: its own DataStore file, so it can be excluded from backups by name.
     single<DataStore<Preferences>> {
         PreferenceDataStoreFactory.create {
-            androidContext().preferencesDataStoreFile(EncryptedApiKeyStore.DATASTORE_NAME)
+            androidContext().preferencesDataStoreFile(EncryptedApiKeyLocalDataSource.DATASTORE_NAME)
         }
     }
     single<KeystoreCipher>()
-    single<EncryptedApiKeyStore>() binds arrayOf(ApiKeyRepository::class, ApiKeyProvider::class)
+    single<EncryptedApiKeyLocalDataSource>() bind ApiKeyLocalDataSource::class
+    single<ApiKeyRepositoryImpl>() bind ApiKeyRepository::class
 
     // Swap the LLM vendor here.
     single<GeminiDataSource>() bind LlmDataSource::class

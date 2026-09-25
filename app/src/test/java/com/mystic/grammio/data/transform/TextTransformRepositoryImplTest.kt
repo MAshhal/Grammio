@@ -9,6 +9,7 @@ import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.model.TransformedText
 import com.mystic.grammio.domain.result.Outcome
+import com.mystic.grammio.testing.FakeApiKeyLocalDataSource
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
@@ -27,10 +28,10 @@ class TextTransformRepositoryImplTest {
         }
     }
 
-    private var apiKey: String? = "test-key"
+    private val apiKeyDataSource = FakeApiKeyLocalDataSource(storedKey = "test-key")
     private val llmDataSource = StubLlmDataSource(Outcome.Success("Hello."))
     private val repository = TextTransformRepositoryImpl(
-        apiKeyProvider = { apiKey },
+        apiKeyDataSource = apiKeyDataSource,
         promptBuilder = PromptBuilder(),
         llmDataSource = llmDataSource,
         sanitizer = ModelOutputSanitizer(),
@@ -47,7 +48,7 @@ class TextTransformRepositoryImplTest {
 
     @Test
     fun `missing key fails without calling the LLM`() = runTest {
-        apiKey = null
+        apiKeyDataSource.clear()
 
         assertThat(repository.transform("x", Transformation.Shorten))
             .isEqualTo(Outcome.Failure(TransformError.MissingApiKey))

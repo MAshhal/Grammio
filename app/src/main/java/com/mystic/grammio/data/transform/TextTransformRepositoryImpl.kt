@@ -1,6 +1,6 @@
 package com.mystic.grammio.data.transform
 
-import com.mystic.grammio.data.apikey.ApiKeyProvider
+import com.mystic.grammio.data.apikey.local.ApiKeyLocalDataSource
 import com.mystic.grammio.data.llm.LlmDataSource
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
@@ -12,7 +12,7 @@ import com.mystic.grammio.domain.result.Outcome
 
 /** Orchestrates a transformation: API key → prompt → LLM → cleaned-up text. */
 class TextTransformRepositoryImpl(
-    private val apiKeyProvider: ApiKeyProvider,
+    private val apiKeyDataSource: ApiKeyLocalDataSource,
     private val promptBuilder: PromptBuilder,
     private val llmDataSource: LlmDataSource,
     private val sanitizer: ModelOutputSanitizer,
@@ -22,7 +22,7 @@ class TextTransformRepositoryImpl(
         text: String,
         transformation: Transformation,
     ): Outcome<TransformedText, TransformError> {
-        val apiKey = apiKeyProvider.apiKey() ?: return Outcome.Failure(TransformError.MissingApiKey)
+        val apiKey = apiKeyDataSource.read() ?: return Outcome.Failure(TransformError.MissingApiKey)
         val prompt = promptBuilder.build(text, transformation)
 
         return when (val outcome = llmDataSource.generate(prompt, apiKey)) {
