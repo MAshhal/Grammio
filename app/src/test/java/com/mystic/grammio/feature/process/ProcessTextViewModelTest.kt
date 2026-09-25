@@ -20,7 +20,10 @@ class ProcessTextViewModelTest {
 
     private val repository = RecordingTextTransformRepository(latencyMs = 100)
 
-    private fun viewModel(text: String = "helo wrld", canReplace: Boolean = true) = ProcessTextViewModel(
+    private fun viewModel(
+        text: String = "helo wrld",
+        canReplace: Boolean = true,
+    ) = ProcessTextViewModel(
         input = ProcessTextInput(text, canReplace),
         transformText = TransformTextUseCase(repository),
         defaultTargetLanguageTag = "en",

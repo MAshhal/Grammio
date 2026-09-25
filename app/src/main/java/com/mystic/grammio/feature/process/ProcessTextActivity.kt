@@ -46,11 +46,14 @@ class ProcessTextActivity : ComponentActivity() {
     private fun handleEffect(effect: ProcessTextEffect) {
         when (effect) {
             is ProcessTextEffect.CopyToClipboard -> copyToClipboard(effect.text)
+
             is ProcessTextEffect.ReturnResult -> {
                 setResult(RESULT_OK, Intent().putExtra(Intent.EXTRA_PROCESS_TEXT, effect.text))
                 finish()
             }
+
             ProcessTextEffect.Close -> finish()
+
             ProcessTextEffect.OpenSettings -> {
                 // We run inside the caller's task; open settings in Grammio's own task instead.
                 startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))

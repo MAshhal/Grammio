@@ -10,9 +10,7 @@ import com.mystic.grammio.domain.repository.TextTransformRepository
  * Application rules for a transformation that hold regardless of which LLM sits behind the
  * repository: input is trimmed, must be non-blank, and is capped in length.
  */
-class TransformTextUseCase(
-    private val repository: TextTransformRepository,
-) {
+class TransformTextUseCase(private val repository: TextTransformRepository) {
     suspend operator fun invoke(
         text: String,
         transformation: Transformation,

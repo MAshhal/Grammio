@@ -39,15 +39,21 @@ class ProcessTextViewModel(
     fun onAction(action: ProcessTextAction) {
         when (action) {
             is ProcessTextAction.Select -> run(action.transformation)
+
             is ProcessTextAction.ChangeTargetLanguage -> changeTargetLanguage(action.languageTag)
+
             ProcessTextAction.Retry -> _state.value.selected?.let(::run)
+
             ProcessTextAction.Copy -> _state.value.resultText?.let { emit(ProcessTextEffect.CopyToClipboard(it)) }
+
             ProcessTextAction.Replace -> {
                 val current = _state.value
                 val text = current.resultText
                 if (current.canReplace && text != null) emit(ProcessTextEffect.ReturnResult(text))
             }
+
             ProcessTextAction.Dismiss -> emit(ProcessTextEffect.Close)
+
             ProcessTextAction.OpenSettings -> emit(ProcessTextEffect.OpenSettings)
         }
     }

@@ -11,7 +11,10 @@ import javax.crypto.spec.GCMParameterSpec
 /** AES-256-GCM with a key that lives in (and never leaves) the AndroidKeyStore. */
 class KeystoreCipher {
 
-    class Encrypted(val iv: ByteArray, val cipherText: ByteArray)
+    class Encrypted(
+        val iv: ByteArray,
+        val cipherText: ByteArray,
+    )
 
     fun encrypt(plain: ByteArray): Encrypted {
         val cipher = Cipher.getInstance(TRANSFORMATION).apply { init(Cipher.ENCRYPT_MODE, key()) }
@@ -29,7 +32,10 @@ class KeystoreCipher {
         val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
         (keyStore.getKey(KEY_ALIAS, null) as? SecretKey)?.let { return it }
 
-        val spec = KeyGenParameterSpec.Builder(KEY_ALIAS, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+        val spec = KeyGenParameterSpec.Builder(
+            KEY_ALIAS,
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
+        )
             .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
             .setKeySize(256)

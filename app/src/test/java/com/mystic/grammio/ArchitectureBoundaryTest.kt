@@ -15,15 +15,28 @@ class ArchitectureBoundaryTest {
     @Test
     fun `domain is pure Kotlin and depends on no other layer`() = assertNoImports(
         layer = "domain",
-        forbidden = listOf("android.", "androidx.", "io.ktor.", "app.cash.sqldelight.", "org.koin.",
-            "com.mystic.grammio.data.", "com.mystic.grammio.feature.", "com.mystic.grammio.di."),
+        forbidden = listOf(
+            "android.",
+            "androidx.",
+            "io.ktor.",
+            "app.cash.sqldelight.",
+            "org.koin.",
+            "com.mystic.grammio.data.",
+            "com.mystic.grammio.feature.",
+            "com.mystic.grammio.di.",
+        ),
     )
 
     @Test
     fun `data does not depend on presentation`() = assertNoImports(
         layer = "data",
-        forbidden = listOf("androidx.compose.", "androidx.lifecycle.", "org.koin.",
-            "com.mystic.grammio.feature.", "com.mystic.grammio.di."),
+        forbidden = listOf(
+            "androidx.compose.",
+            "androidx.lifecycle.",
+            "org.koin.",
+            "com.mystic.grammio.feature.",
+            "com.mystic.grammio.di.",
+        ),
     )
 
     @Test
@@ -32,7 +45,10 @@ class ArchitectureBoundaryTest {
         forbidden = listOf("io.ktor.", "app.cash.sqldelight.", "com.mystic.grammio.data.", "com.mystic.grammio.di."),
     )
 
-    private fun assertNoImports(layer: String, forbidden: List<String>) {
+    private fun assertNoImports(
+        layer: String,
+        forbidden: List<String>,
+    ) {
         val dir = File(root, layer)
         assertWithMessage("missing $dir (run from the module directory)").that(dir.isDirectory).isTrue()
 

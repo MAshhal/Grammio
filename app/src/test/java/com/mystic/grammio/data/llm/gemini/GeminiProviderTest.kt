@@ -38,8 +38,10 @@ class GeminiProviderTest {
         apiKeyProvider = { apiKey },
     )
 
-    private fun MockRequestHandleScope.json(body: String, status: HttpStatusCode = HttpStatusCode.OK) =
-        respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
+    private fun MockRequestHandleScope.json(
+        body: String,
+        status: HttpStatusCode = HttpStatusCode.OK,
+    ) = respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
 
     @Test
     fun `success joins candidate text parts and skips thoughts`() = runTest {

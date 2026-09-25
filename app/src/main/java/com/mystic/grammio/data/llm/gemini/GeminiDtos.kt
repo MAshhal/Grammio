@@ -42,14 +42,10 @@ internal data class CandidateDto(
 )
 
 @Serializable
-internal data class PromptFeedbackDto(
-    val blockReason: String? = null,
-)
+internal data class PromptFeedbackDto(val blockReason: String? = null)
 
 @Serializable
-internal data class GeminiErrorResponse(
-    val error: GeminiErrorBody,
-)
+internal data class GeminiErrorResponse(val error: GeminiErrorBody)
 
 @Serializable
 internal data class GeminiErrorBody(
@@ -59,6 +55,4 @@ internal data class GeminiErrorBody(
 )
 
 @Serializable
-internal data class GeminiErrorDetail(
-    val reason: String? = null,
-)
+internal data class GeminiErrorDetail(val reason: String? = null)

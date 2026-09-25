@@ -73,9 +73,13 @@ class GeminiProvider(
         return when {
             status == HttpStatusCode.BadRequest && error?.details.orEmpty().any { it.reason == "API_KEY_INVALID" } ->
                 TransformError.InvalidApiKey
+
             status == HttpStatusCode.Unauthorized || status == HttpStatusCode.Forbidden -> TransformError.InvalidApiKey
+
             status == HttpStatusCode.TooManyRequests -> TransformError.RateLimited
+
             status.value >= 500 -> TransformError.ServiceUnavailable
+
             else -> TransformError.Unknown
         }
     }
@@ -85,7 +89,9 @@ class GeminiProvider(
         return when (e) {
             is ConnectTimeoutException, is SocketTimeoutException, is java.net.SocketTimeoutException ->
                 TransformError.Timeout
+
             is IOException -> TransformError.Network
+
             else -> TransformError.Unknown
         }
     }

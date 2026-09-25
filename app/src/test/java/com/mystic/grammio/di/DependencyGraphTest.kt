@@ -34,7 +34,9 @@ class DependencyGraphTest {
         assertThat(koin.get<TransformTextUseCase>()).isNotNull()
         assertThat(koin.get<SettingsViewModel>()).isNotNull()
         assertThat(
-            koin.get<ProcessTextViewModel> { parametersOf(ProcessTextInput("hi", canReplace = true)) }.state.value.originalText,
+            koin.get<ProcessTextViewModel> {
+                parametersOf(ProcessTextInput("hi", canReplace = true))
+            }.state.value.originalText,
         ).isEqualTo("hi")
     }
 }

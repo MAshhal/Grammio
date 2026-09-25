@@ -21,7 +21,8 @@ import kotlinx.coroutines.withContext
 class EncryptedApiKeyStore(
     private val dataStore: DataStore<Preferences>,
     private val cipher: KeystoreCipher,
-) : ApiKeyRepository, ApiKeyProvider {
+) : ApiKeyRepository,
+    ApiKeyProvider {
 
     override val hasApiKey: Flow<Boolean> =
         dataStore.data.map { it[CIPHER_TEXT] != null }.distinctUntilChanged()

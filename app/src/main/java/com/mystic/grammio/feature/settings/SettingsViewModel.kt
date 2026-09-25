@@ -28,9 +28,7 @@ sealed interface SettingsAction {
  * Talks to [ApiKeyRepository] directly: saving/clearing a key has no application rules yet, so a
  * use case would be a pass-through. Add one when there is logic (e.g. validating the key online).
  */
-class SettingsViewModel(
-    private val apiKeyRepository: ApiKeyRepository,
-) : ViewModel() {
+class SettingsViewModel(private val apiKeyRepository: ApiKeyRepository) : ViewModel() {
 
     private val keyInput = MutableStateFlow("")
 
@@ -41,6 +39,7 @@ class SettingsViewModel(
     fun onAction(action: SettingsAction) {
         when (action) {
             is SettingsAction.KeyInputChanged -> keyInput.value = action.value
+
             SettingsAction.Save -> {
                 val key = keyInput.value.trim()
                 if (key.isEmpty()) return
@@ -49,6 +48,7 @@ class SettingsViewModel(
                     keyInput.update { "" }
                 }
             }
+
             SettingsAction.Clear -> viewModelScope.launch { apiKeyRepository.clear() }
         }
     }

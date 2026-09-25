@@ -8,9 +8,7 @@ import com.mystic.grammio.domain.repository.TextTransformRepository
 import kotlinx.coroutines.delay
 
 /** Records calls and answers with [nextResult] (or an echo) after [latencyMs] of virtual time. */
-class RecordingTextTransformRepository(
-    var latencyMs: Long = 0,
-) : TextTransformRepository {
+class RecordingTextTransformRepository(var latencyMs: Long = 0) : TextTransformRepository {
     val calls = mutableListOf<Pair<String, Transformation>>()
     var nextResult: Outcome<TransformedText, TransformError>? = null
 

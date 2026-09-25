@@ -15,7 +15,10 @@ data class ProcessTextInput(
     val canReplace: Boolean,
 ) {
     companion object {
-        fun from(intent: Intent, callingActivity: ComponentName?): ProcessTextInput {
+        fun from(
+            intent: Intent,
+            callingActivity: ComponentName?,
+        ): ProcessTextInput {
             val readOnly = intent.getBooleanExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, false)
             return ProcessTextInput(
                 // Spans (bold, links, …) are intentionally dropped; transformations work on plain text.

@@ -19,6 +19,7 @@ class TextTransformRepositoryImpl(
     ): Outcome<TransformedText, TransformError> =
         when (val outcome = llmProvider.generate(promptBuilder.build(text, transformation))) {
             is Outcome.Failure -> outcome
+
             is Outcome.Success -> {
                 val cleaned = cleanModelOutput(outcome.value)
                 if (cleaned.isEmpty()) {

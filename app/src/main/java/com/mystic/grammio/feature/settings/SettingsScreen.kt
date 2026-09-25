@@ -58,7 +58,11 @@ fun SettingsScreen(
                 value = state.keyInput,
                 onValueChange = { onAction(SettingsAction.KeyInputChanged(it)) },
                 label = {
-                    Text(stringResource(if (state.hasApiKey) R.string.settings_replace_key else R.string.settings_enter_key))
+                    Text(
+                        stringResource(
+                            if (state.hasApiKey) R.string.settings_replace_key else R.string.settings_enter_key,
+                        ),
+                    )
                 },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),

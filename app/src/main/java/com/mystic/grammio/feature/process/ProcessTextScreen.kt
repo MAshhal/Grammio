@@ -113,7 +113,10 @@ private fun OriginalText(text: String) {
 }
 
 @Composable
-private fun TransformationChips(state: ProcessTextUiState, onAction: (ProcessTextAction) -> Unit) {
+private fun TransformationChips(
+    state: ProcessTextUiState,
+    onAction: (ProcessTextAction) -> Unit,
+) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         state.transformations.forEach { transformation ->
             FilterChip(
@@ -126,7 +129,10 @@ private fun TransformationChips(state: ProcessTextUiState, onAction: (ProcessTex
 }
 
 @Composable
-private fun LanguagePicker(selectedTag: String, onSelect: (String) -> Unit) {
+private fun LanguagePicker(
+    selectedTag: String,
+    onSelect: (String) -> Unit,
+) {
     var expanded by remember { mutableStateOf(false) }
     val tags = remember { translationLanguageTags(Locale.getDefault().language) }
     Box {
@@ -149,7 +155,10 @@ private fun LanguagePicker(selectedTag: String, onSelect: (String) -> Unit) {
 }
 
 @Composable
-private fun ResultCard(result: ResultState, onAction: (ProcessTextAction) -> Unit) {
+private fun ResultCard(
+    result: ResultState,
+    onAction: (ProcessTextAction) -> Unit,
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -163,12 +172,15 @@ private fun ResultCard(result: ResultState, onAction: (ProcessTextAction) -> Uni
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+
                 ResultState.Loading -> CircularProgressIndicator(
                     modifier = Modifier.size(32.dp).align(Alignment.Center),
                 )
+
                 is ResultState.Success -> SelectionContainer {
                     Text(result.text, style = MaterialTheme.typography.bodyLarge)
                 }
+
                 is ResultState.Failure -> ErrorContent(result.error, onAction)
             }
         }
@@ -176,23 +188,31 @@ private fun ResultCard(result: ResultState, onAction: (ProcessTextAction) -> Uni
 }
 
 @Composable
-private fun ErrorContent(error: TransformError, onAction: (ProcessTextAction) -> Unit) {
+private fun ErrorContent(
+    error: TransformError,
+    onAction: (ProcessTextAction) -> Unit,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(error.message(), color = MaterialTheme.colorScheme.error)
         when (error.recovery) {
             ErrorRecovery.Retry -> OutlinedButton(onClick = { onAction(ProcessTextAction.Retry) }) {
                 Text(stringResource(R.string.action_retry))
             }
+
             ErrorRecovery.OpenSettings -> OutlinedButton(onClick = { onAction(ProcessTextAction.OpenSettings) }) {
                 Text(stringResource(R.string.action_open_settings))
             }
+
             ErrorRecovery.None -> Unit
         }
     }
 }
 
 @Composable
-private fun ActionRow(state: ProcessTextUiState, onAction: (ProcessTextAction) -> Unit) {
+private fun ActionRow(
+    state: ProcessTextUiState,
+    onAction: (ProcessTextAction) -> Unit,
+) {
     val hasResult = state.resultText != null
     Row(
         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),

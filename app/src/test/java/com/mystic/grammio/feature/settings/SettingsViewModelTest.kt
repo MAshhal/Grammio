@@ -29,6 +29,7 @@ class SettingsViewModelTest {
     }
 
     private val repository = InMemoryApiKeyRepository()
+
     // Lazy: must be created after MainDispatcherRule has installed the test Main dispatcher.
     private val viewModel by lazy { SettingsViewModel(repository) }
 
