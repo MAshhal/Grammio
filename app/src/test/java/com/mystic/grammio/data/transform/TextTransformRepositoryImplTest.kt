@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.mystic.grammio.data.llm.LlmPrompt
 import com.mystic.grammio.data.llm.LlmProvider
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
+import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
 import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.model.TransformedText
@@ -19,7 +20,7 @@ class TextTransformRepositoryImplTest {
     }
 
     private val provider = StubProvider(Outcome.Success("Hello."))
-    private val repository = TextTransformRepositoryImpl(PromptBuilder(), provider)
+    private val repository = TextTransformRepositoryImpl(PromptBuilder(), provider, ModelOutputSanitizer())
 
     @Test
     fun `builds the prompt from the input and wraps the reply`() = runTest {
@@ -43,21 +44,5 @@ class TextTransformRepositoryImplTest {
 
         assertThat(repository.transform("x", Transformation.Shorten))
             .isEqualTo(Outcome.Failure(TransformError.Unknown))
-    }
-
-    @Test
-    fun `cleanup strips fences, echoed tags and wrapping quotes`() {
-        assertThat(cleanModelOutput("```\nHello\nthere\n```")).isEqualTo("Hello\nthere")
-        assertThat(cleanModelOutput("```text\nHello\n```")).isEqualTo("Hello")
-        assertThat(cleanModelOutput("<text>\nHello\n</text>")).isEqualTo("Hello")
-        assertThat(cleanModelOutput("\"Hello\"")).isEqualTo("Hello")
-        assertThat(cleanModelOutput("“Hello”")).isEqualTo("Hello")
-        assertThat(cleanModelOutput("  Hello  ")).isEqualTo("Hello")
-    }
-
-    @Test
-    fun `cleanup keeps quotes that are part of the text`() {
-        assertThat(cleanModelOutput("He said \"hi\" twice")).isEqualTo("He said \"hi\" twice")
-        assertThat(cleanModelOutput("\"")).isEqualTo("\"")
     }
 }

@@ -13,6 +13,7 @@ import com.mystic.grammio.data.llm.gemini.GeminiProvider
 import com.mystic.grammio.data.network.HttpClientFactory
 import com.mystic.grammio.data.transform.TextTransformRepositoryImpl
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
+import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
 import com.mystic.grammio.domain.repository.ApiKeyRepository
 import com.mystic.grammio.domain.repository.TextTransformRepository
 import io.ktor.client.HttpClient
@@ -37,5 +38,6 @@ val dataModule = module {
     // Swap the LLM vendor here.
     single<GeminiProvider>() bind LlmProvider::class
     single<PromptBuilder>()
+    single<ModelOutputSanitizer>()
     single<TextTransformRepositoryImpl>() bind TextTransformRepository::class
 }
