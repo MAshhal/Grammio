@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">grammio</string>
+    <string name="app_name">Grammio</string>
+    <!-- Shown in the system text-selection menu of other apps. -->
+    <string name="process_text_label">Grammio</string>
 </resources>
