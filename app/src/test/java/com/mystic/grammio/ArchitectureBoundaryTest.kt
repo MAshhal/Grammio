@@ -22,7 +22,7 @@ class ArchitectureBoundaryTest {
             "app.cash.sqldelight.",
             "org.koin.",
             "com.mystic.grammio.data.",
-            "com.mystic.grammio.feature.",
+            "com.mystic.grammio.presentation.",
             "com.mystic.grammio.di.",
         ),
     )
@@ -34,14 +34,14 @@ class ArchitectureBoundaryTest {
             "androidx.compose.",
             "androidx.lifecycle.",
             "org.koin.",
-            "com.mystic.grammio.feature.",
+            "com.mystic.grammio.presentation.",
             "com.mystic.grammio.di.",
         ),
     )
 
     @Test
     fun `presentation does not depend on data`() = assertNoImports(
-        layer = "feature",
+        layer = "presentation",
         forbidden = listOf("io.ktor.", "app.cash.sqldelight.", "com.mystic.grammio.data.", "com.mystic.grammio.di."),
     )
 

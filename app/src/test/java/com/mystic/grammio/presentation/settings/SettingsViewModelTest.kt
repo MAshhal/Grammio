@@ -1,4 +1,4 @@
-package com.mystic.grammio.feature.settings
+package com.mystic.grammio.presentation.settings
 
 import com.google.common.truth.Truth.assertThat
 import com.mystic.grammio.domain.repository.ApiKeyRepository

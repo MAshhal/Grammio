@@ -1,7 +1,7 @@
 package com.mystic.grammio.di
 
-import com.mystic.grammio.feature.process.ProcessTextViewModel
-import com.mystic.grammio.feature.settings.SettingsViewModel
+import com.mystic.grammio.presentation.process.ProcessTextViewModel
+import com.mystic.grammio.presentation.settings.SettingsViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import org.koin.plugin.module.dsl.viewModel

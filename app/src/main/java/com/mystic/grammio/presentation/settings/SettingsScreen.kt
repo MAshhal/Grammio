@@ -1,4 +1,4 @@
-package com.mystic.grammio.feature.settings
+package com.mystic.grammio.presentation.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,7 +30,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mystic.grammio.R
-import com.mystic.grammio.ui.theme.GrammioTheme
+import com.mystic.grammio.presentation.theme.GrammioTheme
 
 private const val API_KEY_URL = "https://aistudio.google.com/apikey"
 

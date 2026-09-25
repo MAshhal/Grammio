@@ -1,4 +1,4 @@
-package com.mystic.grammio.feature.process
+package com.mystic.grammio.presentation.process
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.dp
 import com.mystic.grammio.R
 import com.mystic.grammio.domain.model.TransformError
 import com.mystic.grammio.domain.model.Transformation
-import com.mystic.grammio.ui.theme.GrammioTheme
+import com.mystic.grammio.presentation.theme.GrammioTheme
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)

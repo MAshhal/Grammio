@@ -5,9 +5,9 @@ import com.google.common.truth.Truth.assertThat
 import com.mystic.grammio.domain.repository.ApiKeyRepository
 import com.mystic.grammio.domain.repository.TextTransformRepository
 import com.mystic.grammio.domain.usecase.TransformTextUseCase
-import com.mystic.grammio.feature.process.ProcessTextInput
-import com.mystic.grammio.feature.process.ProcessTextViewModel
-import com.mystic.grammio.feature.settings.SettingsViewModel
+import com.mystic.grammio.presentation.process.ProcessTextInput
+import com.mystic.grammio.presentation.process.ProcessTextViewModel
+import com.mystic.grammio.presentation.settings.SettingsViewModel
 import io.mockk.mockk
 import org.junit.After
 import org.junit.Test

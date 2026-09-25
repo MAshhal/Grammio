@@ -1,4 +1,4 @@
-package com.mystic.grammio.ui.theme
+package com.mystic.grammio.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 

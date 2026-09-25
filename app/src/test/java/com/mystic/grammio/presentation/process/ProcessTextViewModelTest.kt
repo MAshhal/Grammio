@@ -1,4 +1,4 @@
-package com.mystic.grammio.feature.process
+package com.mystic.grammio.presentation.process
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat

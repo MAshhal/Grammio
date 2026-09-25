@@ -6,9 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.mystic.grammio.feature.settings.SettingsScreen
-import com.mystic.grammio.feature.settings.SettingsViewModel
-import com.mystic.grammio.ui.theme.GrammioTheme
+import com.mystic.grammio.presentation.settings.SettingsScreen
+import com.mystic.grammio.presentation.settings.SettingsViewModel
+import com.mystic.grammio.presentation.theme.GrammioTheme
 import org.koin.androidx.compose.koinViewModel
 
 /** Launcher screen: how to use Grammio and where to enter the API key. */

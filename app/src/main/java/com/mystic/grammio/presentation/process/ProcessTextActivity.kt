@@ -1,4 +1,4 @@
-package com.mystic.grammio.feature.process
+package com.mystic.grammio.presentation.process
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -14,7 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mystic.grammio.MainActivity
 import com.mystic.grammio.R
-import com.mystic.grammio.ui.theme.GrammioTheme
+import com.mystic.grammio.presentation.theme.GrammioTheme
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 

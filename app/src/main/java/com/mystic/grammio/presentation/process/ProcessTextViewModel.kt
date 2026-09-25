@@ -1,4 +1,4 @@
-package com.mystic.grammio.feature.process
+package com.mystic.grammio.presentation.process
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

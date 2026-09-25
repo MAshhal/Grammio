@@ -27,7 +27,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".feature.process.ProcessTextActivity"
+            android:name=".presentation.process.ProcessTextActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:label="@string/process_text_label"
