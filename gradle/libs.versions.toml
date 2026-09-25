@@ -31,7 +31,7 @@ spotless = "8.9.0"
 
 # Dependency Injection
 koin = "4.2.2"
-koin-compiler = "1.1.0"
+koin-compiler = "1.2.1"
 
 # Logging
 kermit = "2.2.0"
