@@ -1,4 +1,4 @@
-package com.mystic.grammio.data.prompt
+package com.mystic.grammio.data.transform.prompt
 
 import com.google.common.truth.Truth.assertThat
 import com.mystic.grammio.domain.model.Transformation

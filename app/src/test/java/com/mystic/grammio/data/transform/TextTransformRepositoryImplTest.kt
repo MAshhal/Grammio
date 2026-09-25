@@ -1,9 +1,9 @@
-package com.mystic.grammio.data.repository
+package com.mystic.grammio.data.transform
 
 import com.google.common.truth.Truth.assertThat
 import com.mystic.grammio.data.llm.LlmPrompt
 import com.mystic.grammio.data.llm.LlmProvider
-import com.mystic.grammio.data.prompt.PromptBuilder
+import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.model.TransformedText

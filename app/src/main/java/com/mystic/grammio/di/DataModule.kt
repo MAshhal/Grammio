@@ -11,8 +11,8 @@ import com.mystic.grammio.data.apikey.KeystoreCipher
 import com.mystic.grammio.data.llm.LlmProvider
 import com.mystic.grammio.data.llm.gemini.GeminiProvider
 import com.mystic.grammio.data.network.HttpClientFactory
-import com.mystic.grammio.data.prompt.PromptBuilder
-import com.mystic.grammio.data.repository.TextTransformRepositoryImpl
+import com.mystic.grammio.data.transform.TextTransformRepositoryImpl
+import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.domain.repository.ApiKeyRepository
 import com.mystic.grammio.domain.repository.TextTransformRepository
 import io.ktor.client.HttpClient
