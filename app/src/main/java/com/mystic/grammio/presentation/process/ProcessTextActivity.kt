@@ -1,18 +1,14 @@
 package com.mystic.grammio.presentation.process
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.mystic.grammio.R
+import com.mystic.grammio.presentation.common.copyToClipboard
 import com.mystic.grammio.presentation.settings.SettingsActivity
 import com.mystic.grammio.presentation.theme.GrammioTheme
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -59,15 +55,6 @@ class ProcessTextActivity : ComponentActivity() {
                 startActivity(Intent(this, SettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 finish()
             }
-        }
-    }
-
-    private fun copyToClipboard(text: String) {
-        getSystemService(ClipboardManager::class.java)
-            .setPrimaryClip(ClipData.newPlainText(getString(R.string.app_name), text))
-        // Android 13+ shows its own clipboard confirmation.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            Toast.makeText(this, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()
         }
     }
 }
