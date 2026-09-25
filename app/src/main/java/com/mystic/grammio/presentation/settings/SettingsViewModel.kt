@@ -12,19 +12,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class SettingsUiState(
-    val hasApiKey: Boolean = false,
-    val keyInput: String = "",
-) {
-    val canSave: Boolean get() = keyInput.isNotBlank()
-}
-
-sealed interface SettingsAction {
-    data class KeyInputChanged(val value: String) : SettingsAction
-    data object Save : SettingsAction
-    data object Clear : SettingsAction
-}
-
 /**
  * Saving goes through [SaveApiKeyUseCase] because it has rules. Observing and clearing the key have
  * none, so they use [ApiKeyRepository] directly rather than through pass-through use cases.

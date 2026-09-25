@@ -1,4 +1,4 @@
-package com.mystic.grammio
+package com.mystic.grammio.presentation.settings
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -6,13 +6,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.mystic.grammio.presentation.settings.SettingsScreen
-import com.mystic.grammio.presentation.settings.SettingsViewModel
 import com.mystic.grammio.presentation.theme.GrammioTheme
 import org.koin.androidx.compose.koinViewModel
 
 /** Launcher screen: how to use Grammio and where to enter the API key. */
-class MainActivity : ComponentActivity() {
+class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

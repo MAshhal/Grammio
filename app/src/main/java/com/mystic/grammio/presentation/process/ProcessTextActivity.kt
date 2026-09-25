@@ -12,8 +12,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.mystic.grammio.MainActivity
 import com.mystic.grammio.R
+import com.mystic.grammio.presentation.settings.SettingsActivity
 import com.mystic.grammio.presentation.theme.GrammioTheme
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -56,7 +56,7 @@ class ProcessTextActivity : ComponentActivity() {
 
             ProcessTextEffect.OpenSettings -> {
                 // We run inside the caller's task; open settings in Grammio's own task instead.
-                startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                startActivity(Intent(this, SettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 finish()
             }
         }

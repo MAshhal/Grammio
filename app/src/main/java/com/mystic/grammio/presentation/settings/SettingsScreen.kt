@@ -9,11 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -21,7 +17,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
@@ -30,6 +25,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mystic.grammio.R
+import com.mystic.grammio.presentation.settings.components.ApiKeyStatus
 import com.mystic.grammio.presentation.theme.GrammioTheme
 
 private const val API_KEY_URL = "https://aistudio.google.com/apikey"
@@ -52,7 +48,7 @@ fun SettingsScreen(
             Text(stringResource(R.string.settings_how_to_use), style = MaterialTheme.typography.bodyLarge)
 
             Text(stringResource(R.string.settings_api_key_title), style = MaterialTheme.typography.titleMedium)
-            KeyStatus(state.hasApiKey)
+            ApiKeyStatus(state.hasApiKey)
 
             OutlinedTextField(
                 value = state.keyInput,
@@ -89,19 +85,6 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-        }
-    }
-}
-
-@Composable
-private fun KeyStatus(hasApiKey: Boolean) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (hasApiKey) {
-            Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            Text(stringResource(R.string.settings_key_saved))
-        } else {
-            Icon(Icons.Filled.Info, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-            Text(stringResource(R.string.settings_key_missing))
         }
     }
 }
