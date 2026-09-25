@@ -5,7 +5,6 @@ import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.mystic.grammio.data.db.GrammioDatabase
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
-import org.koin.plugin.module.dsl.single
 
 val databaseModule = module {
     single<SqlDriver> {
@@ -15,5 +14,5 @@ val databaseModule = module {
             name = "grammio.db",
         )
     }
-    single<GrammioDatabase>()
+    single<GrammioDatabase> { GrammioDatabase(get()) }
 }
