@@ -1,61 +1,31 @@
 package com.mystic.grammio.presentation.process
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mystic.grammio.R
-import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.Transformation
-import com.mystic.grammio.presentation.process.model.ErrorRecovery
+import com.mystic.grammio.presentation.process.components.LanguagePicker
+import com.mystic.grammio.presentation.process.components.OriginalTextPreview
+import com.mystic.grammio.presentation.process.components.ProcessTextActionBar
+import com.mystic.grammio.presentation.process.components.ResultCard
+import com.mystic.grammio.presentation.process.components.TransformationChips
 import com.mystic.grammio.presentation.process.model.TransformationOptions
-import com.mystic.grammio.presentation.process.model.TranslationLanguages
-import com.mystic.grammio.presentation.process.model.labelRes
-import com.mystic.grammio.presentation.process.model.message
-import com.mystic.grammio.presentation.process.model.recovery
 import com.mystic.grammio.presentation.theme.GrammioTheme
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,6 +41,7 @@ fun ProcessTextSheet(
     }
 }
 
+/** Sheet layout only; each section is a component in `components/`. */
 @Composable
 fun ProcessTextContent(
     state: ProcessTextUiState,
@@ -90,157 +61,32 @@ fun ProcessTextContent(
         if (!state.hasInput) {
             Text(stringResource(R.string.process_no_text), style = MaterialTheme.typography.bodyLarge)
         } else {
-            OriginalText(state.originalText)
-            TransformationChips(state, onAction)
+            OriginalTextPreview(state.originalText)
+            TransformationChips(
+                transformations = state.transformations,
+                selected = state.selected,
+                onSelect = { onAction(ProcessTextAction.Select(it)) },
+            )
             if (state.selected is Transformation.Translate) {
-                LanguagePicker(state.targetLanguageTag) { onAction(ProcessTextAction.ChangeTargetLanguage(it)) }
+                LanguagePicker(
+                    selectedTag = state.targetLanguageTag,
+                    onSelect = { onAction(ProcessTextAction.ChangeTargetLanguage(it)) },
+                )
             }
-            ResultCard(state.result, onAction)
-        }
-
-        ActionRow(state, onAction)
-    }
-}
-
-@Composable
-private fun OriginalText(text: String) {
-    var expanded by rememberSaveable { mutableStateOf(false) }
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        maxLines = if (expanded) Int.MAX_VALUE else 3,
-        overflow = TextOverflow.Ellipsis,
-        modifier = Modifier
-            .fillMaxWidth()
-            .animateContentSize()
-            .clickable { expanded = !expanded },
-    )
-}
-
-@Composable
-private fun TransformationChips(
-    state: ProcessTextUiState,
-    onAction: (ProcessTextAction) -> Unit,
-) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        state.transformations.forEach { transformation ->
-            FilterChip(
-                selected = transformation == state.selected,
-                onClick = { onAction(ProcessTextAction.Select(transformation)) },
-                label = { Text(stringResource(transformation.labelRes())) },
+            ResultCard(
+                result = state.result,
+                onRetry = { onAction(ProcessTextAction.Retry) },
+                onOpenSettings = { onAction(ProcessTextAction.OpenSettings) },
             )
         }
-    }
-}
 
-@Composable
-private fun LanguagePicker(
-    selectedTag: String,
-    onSelect: (String) -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val tags = remember { TranslationLanguages.tags(Locale.getDefault().language) }
-    Box {
-        TextButton(onClick = { expanded = true }) {
-            Text(stringResource(R.string.process_target_language, TranslationLanguages.displayName(selectedTag)))
-            Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            tags.forEach { tag ->
-                DropdownMenuItem(
-                    text = { Text(TranslationLanguages.displayName(tag)) },
-                    onClick = {
-                        expanded = false
-                        onSelect(tag)
-                    },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ResultCard(
-    result: ResultUiState,
-    onAction: (ProcessTextAction) -> Unit,
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 96.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-    ) {
-        Box(Modifier.fillMaxWidth().padding(16.dp).animateContentSize()) {
-            when (result) {
-                ResultUiState.Idle -> Text(
-                    stringResource(R.string.process_pick_transformation),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                ResultUiState.Loading -> CircularProgressIndicator(
-                    modifier = Modifier.size(32.dp).align(Alignment.Center),
-                )
-
-                is ResultUiState.Success -> SelectionContainer {
-                    Text(result.text, style = MaterialTheme.typography.bodyLarge)
-                }
-
-                is ResultUiState.Failure -> ErrorContent(result.error, onAction)
-            }
-        }
-    }
-}
-
-@Composable
-private fun ErrorContent(
-    error: TransformError,
-    onAction: (ProcessTextAction) -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(error.message(), color = MaterialTheme.colorScheme.error)
-        when (error.recovery) {
-            ErrorRecovery.Retry -> OutlinedButton(onClick = { onAction(ProcessTextAction.Retry) }) {
-                Text(stringResource(R.string.action_retry))
-            }
-
-            ErrorRecovery.OpenSettings -> OutlinedButton(onClick = { onAction(ProcessTextAction.OpenSettings) }) {
-                Text(stringResource(R.string.action_open_settings))
-            }
-
-            ErrorRecovery.None -> Unit
-        }
-    }
-}
-
-@Composable
-private fun ActionRow(
-    state: ProcessTextUiState,
-    onAction: (ProcessTextAction) -> Unit,
-) {
-    val hasResult = state.resultText != null
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        TextButton(onClick = { onAction(ProcessTextAction.Dismiss) }) {
-            Text(stringResource(R.string.action_close))
-        }
-        Spacer(Modifier.weight(1f))
-        if (state.canReplace) {
-            OutlinedButton(onClick = { onAction(ProcessTextAction.Copy) }, enabled = hasResult) {
-                Text(stringResource(R.string.action_copy))
-            }
-            Button(onClick = { onAction(ProcessTextAction.Replace) }, enabled = hasResult) {
-                Text(stringResource(R.string.action_replace))
-            }
-        } else {
-            Button(onClick = { onAction(ProcessTextAction.Copy) }, enabled = hasResult) {
-                Text(stringResource(R.string.action_copy))
-            }
-        }
+        ProcessTextActionBar(
+            canReplace = state.canReplace,
+            hasResult = state.resultText != null,
+            onClose = { onAction(ProcessTextAction.Dismiss) },
+            onCopy = { onAction(ProcessTextAction.Copy) },
+            onReplace = { onAction(ProcessTextAction.Replace) },
+        )
     }
 }
 
