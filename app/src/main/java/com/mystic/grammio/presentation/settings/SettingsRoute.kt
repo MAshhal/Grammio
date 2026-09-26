@@ -13,5 +13,8 @@ sealed interface SettingsRoute : NavKey {
     data object Provider : SettingsRoute
 
     @Serializable
+    data object SystemPrompt : SettingsRoute
+
+    @Serializable
     data object History : SettingsRoute
 }

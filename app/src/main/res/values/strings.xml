@@ -21,6 +21,11 @@
     <!-- Settings -->
     <string name="settings_provider_page_title">Provider and model</string>
     <string name="settings_provider_page_description">AI provider, API key and model</string>
+    <string name="settings_system_prompt_page_title">System prompt</string>
+    <string name="settings_system_prompt_page_description">The instructions sent with every transformation</string>
+    <string name="settings_system_prompt_default">Default prompt</string>
+    <string name="settings_system_prompt_custom">Your prompt</string>
+    <string name="settings_system_prompt_explanation">Sent to the model before every transformation. Grammio adds the transformation’s task and the output language after it. Save it empty to go back to the default.</string>
     <string name="settings_history_page_title">History and privacy</string>
     <string name="settings_history_page_description">Whether transformations are kept on this device</string>
     <string name="settings_how_to_use">Select text in any app, open the selection menu (⋮ or “More”), and tap Grammio to fix, rewrite, summarize or translate it.</string>
@@ -56,6 +61,7 @@
     <string name="action_save">Save</string>
     <string name="action_remove_key">Remove key</string>
     <string name="action_refresh">Refresh</string>
+    <string name="action_reset_to_default">Reset to default</string>
 
     <!-- Providers -->
     <string name="provider_gemini">Google Gemini</string>

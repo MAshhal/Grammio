@@ -12,6 +12,7 @@ import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.AiProvider
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.model.TransformedText
+import com.mystic.grammio.domain.repository.PromptSettingsRepository
 import com.mystic.grammio.domain.repository.TextTransformRepository
 import com.mystic.grammio.domain.result.Outcome
 import com.mystic.grammio.domain.result.map
@@ -20,13 +21,15 @@ import kotlin.time.TimeSource
 import kotlinx.coroutines.flow.first
 
 /**
- * Orchestrates a transformation: active provider → connection → prompt → LLM → cleaned-up text.
+ * Orchestrates a transformation: active provider → connection → prompt (the user's system prompt
+ * plus the task) → LLM → cleaned-up text.
  * When the user has opted in, every attempt that gets this far, successful or not, is recorded in
  * the transformation log.
  */
 class TextTransformRepositoryImpl(
     private val connectionResolver: ProviderConnectionResolver,
     private val promptBuilder: PromptBuilder,
+    private val promptSettings: PromptSettingsRepository,
     private val llmDataSources: LlmDataSourceRegistry,
     private val sanitizer: ModelOutputSanitizer,
     private val transformationLog: TransformationLogLocalDataSource,
@@ -69,7 +72,7 @@ class TextTransformRepositoryImpl(
         provider: AiProvider,
         connection: LlmConnection,
     ): Outcome<TransformedText, TransformError> {
-        val prompt = promptBuilder.build(text, transformation)
+        val prompt = promptBuilder.build(text, transformation, promptSettings.systemPrompt.first())
 
         return when (val outcome = llmDataSources.forProvider(provider).generate(prompt, connection)) {
             is Outcome.Failure -> outcome

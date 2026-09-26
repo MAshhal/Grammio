@@ -15,6 +15,9 @@ import com.mystic.grammio.data.llm.anthropic.AnthropicDataSource
 import com.mystic.grammio.data.llm.gemini.GeminiDataSource
 import com.mystic.grammio.data.llm.openai.OpenAiDataSource
 import com.mystic.grammio.data.network.HttpClientFactory
+import com.mystic.grammio.data.prompt.PromptSettingsRepositoryImpl
+import com.mystic.grammio.data.prompt.local.DataStorePromptPreferencesLocalDataSource
+import com.mystic.grammio.data.prompt.local.PromptPreferencesLocalDataSource
 import com.mystic.grammio.data.provider.ModelCatalogRepositoryImpl
 import com.mystic.grammio.data.provider.ProviderConnectionResolver
 import com.mystic.grammio.data.provider.ProviderSettingsRepositoryImpl
@@ -31,6 +34,7 @@ import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
 import com.mystic.grammio.domain.repository.ApiKeyRepository
 import com.mystic.grammio.domain.repository.HistorySettingsRepository
 import com.mystic.grammio.domain.repository.ModelCatalogRepository
+import com.mystic.grammio.domain.repository.PromptSettingsRepository
 import com.mystic.grammio.domain.repository.ProviderSettingsRepository
 import com.mystic.grammio.domain.repository.TextTransformRepository
 import io.ktor.client.HttpClient
@@ -44,6 +48,7 @@ import org.koin.plugin.module.dsl.single
 private val apiKeyStore = named("apiKeyStore")
 private val providerSettingsStore = named("providerSettingsStore")
 private val historySettingsStore = named("historySettingsStore")
+private val promptSettingsStore = named("promptSettingsStore")
 
 val dataModule = module {
     single<HttpClient> { HttpClientFactory.create(enableLogging = BuildConfig.DEBUG) }
@@ -85,6 +90,17 @@ val dataModule = module {
     }
     single<ProviderConnectionResolver>()
     single<ModelCatalogRepositoryImpl>() bind ModelCatalogRepository::class
+
+    // System prompt: the user's own, if any. Not secret, so backed up.
+    single<DataStore<Preferences>>(promptSettingsStore) {
+        PreferenceDataStoreFactory.create {
+            androidContext().preferencesDataStoreFile(DataStorePromptPreferencesLocalDataSource.DATASTORE_NAME)
+        }
+    }
+    single {
+        DataStorePromptPreferencesLocalDataSource(get(promptSettingsStore))
+    } bind PromptPreferencesLocalDataSource::class
+    single<PromptSettingsRepositoryImpl>() bind PromptSettingsRepository::class
 
     single<PromptBuilder>()
     single<ModelOutputSanitizer>()

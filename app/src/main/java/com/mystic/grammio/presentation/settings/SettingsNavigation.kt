@@ -10,6 +10,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.mystic.grammio.presentation.settings.history.HistorySettingsScreen
 import com.mystic.grammio.presentation.settings.history.HistorySettingsViewModel
+import com.mystic.grammio.presentation.settings.prompt.SystemPromptScreen
+import com.mystic.grammio.presentation.settings.prompt.SystemPromptViewModel
 import com.mystic.grammio.presentation.settings.provider.ProviderSettingsScreen
 import com.mystic.grammio.presentation.settings.provider.ProviderSettingsViewModel
 import org.koin.compose.viewmodel.koinViewModel
@@ -39,6 +41,11 @@ fun SettingsNavigation(initialBackStack: List<SettingsRoute>) {
                 val viewModel: ProviderSettingsViewModel = koinViewModel()
                 val state by viewModel.state.collectAsStateWithLifecycle()
                 ProviderSettingsScreen(state = state, onAction = viewModel::onAction, onBack = goBack)
+            }
+            entry<SettingsRoute.SystemPrompt> {
+                val viewModel: SystemPromptViewModel = koinViewModel()
+                val state by viewModel.state.collectAsStateWithLifecycle()
+                SystemPromptScreen(state = state, onAction = viewModel::onAction, onBack = goBack)
             }
             entry<SettingsRoute.History> {
                 val viewModel: HistorySettingsViewModel = koinViewModel()

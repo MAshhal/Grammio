@@ -15,6 +15,7 @@ import com.mystic.grammio.testing.FakeApiKeyLocalDataSource
 import com.mystic.grammio.testing.FakeProviderPreferencesLocalDataSource
 import com.mystic.grammio.testing.FakeTransformationLogPreferencesLocalDataSource
 import com.mystic.grammio.testing.FixedClock
+import com.mystic.grammio.testing.InMemoryPromptSettingsRepository
 import com.mystic.grammio.testing.RecordingTransformationLogLocalDataSource
 import com.mystic.grammio.testing.StubLlmDataSource
 import kotlinx.coroutines.test.runTest
@@ -31,9 +32,11 @@ class TextTransformRepositoryImplTest {
     private val transformationLog = RecordingTransformationLogLocalDataSource()
     private val logPreferences = FakeTransformationLogPreferencesLocalDataSource(enabled = true)
     private val clock = FixedClock()
+    private val promptSettings = InMemoryPromptSettingsRepository()
     private val repository = TextTransformRepositoryImpl(
         connectionResolver = ProviderConnectionResolver(apiKeyDataSource, preferences),
         promptBuilder = PromptBuilder(),
+        promptSettings = promptSettings,
         llmDataSources = LlmDataSourceRegistry(
             gemini = llmDataSource,
             openAi = StubLlmDataSource(Outcome.Failure(TransformError.Unknown)),
@@ -52,6 +55,15 @@ class TextTransformRepositoryImplTest {
         assertThat(result).isEqualTo(Outcome.Success(TransformedText("Hello.", Transformation.FixGrammar)))
         assertThat(llmDataSource.lastPrompt?.userText).contains("helo")
         assertThat(llmDataSource.lastConnection?.apiKey).isEqualTo("test-key")
+    }
+
+    @Test
+    fun `sends the user's system prompt`() = runTest {
+        promptSettings.setSystemPrompt("Always answer in lowercase.")
+
+        repository.transform("helo", Transformation.FixGrammar)
+
+        assertThat(llmDataSource.lastPrompt?.systemInstruction).startsWith("Always answer in lowercase.")
     }
 
     @Test

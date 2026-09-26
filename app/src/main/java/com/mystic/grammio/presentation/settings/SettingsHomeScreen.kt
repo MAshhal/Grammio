@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Key
+import androidx.compose.material.icons.outlined.SmartToy
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -41,6 +42,13 @@ fun SettingsHomeScreen(onNavigate: (SettingsRoute) -> Unit) {
                     title = stringResource(R.string.settings_provider_page_title),
                     description = stringResource(R.string.settings_provider_page_description),
                     onClick = { onNavigate(SettingsRoute.Provider) },
+                )
+                RowDivider()
+                SettingsNavigationRow(
+                    icon = Icons.Outlined.SmartToy,
+                    title = stringResource(R.string.settings_system_prompt_page_title),
+                    description = stringResource(R.string.settings_system_prompt_page_description),
+                    onClick = { onNavigate(SettingsRoute.SystemPrompt) },
                 )
                 RowDivider()
                 SettingsNavigationRow(
