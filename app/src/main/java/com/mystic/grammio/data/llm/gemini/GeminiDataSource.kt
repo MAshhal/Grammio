@@ -1,12 +1,14 @@
 package com.mystic.grammio.data.llm.gemini
 
 import co.touchlab.kermit.Logger
+import com.mystic.grammio.data.llm.LlmConnection
 import com.mystic.grammio.data.llm.LlmDataSource
 import com.mystic.grammio.data.llm.LlmPrompt
 import com.mystic.grammio.data.llm.gemini.dto.GeminiErrorResponseDto
 import com.mystic.grammio.data.llm.gemini.mapper.GeminiErrorMapper
 import com.mystic.grammio.data.llm.gemini.mapper.GeminiRequestMapper
 import com.mystic.grammio.data.llm.gemini.mapper.GeminiResponseMapper
+import com.mystic.grammio.data.llm.mapper.HttpErrorMapper
 import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.result.Outcome
 import io.ktor.client.HttpClient
@@ -31,11 +33,11 @@ class GeminiDataSource(private val httpClient: HttpClient) : LlmDataSource {
 
     override suspend fun generate(
         prompt: LlmPrompt,
-        apiKey: String,
+        connection: LlmConnection,
     ): Outcome<String, TransformError> = try {
-        val response = httpClient.post("$BASE_URL/models/$MODEL:generateContent") {
+        val response = httpClient.post("${connection.baseUrl}/models/${connection.modelId}:generateContent") {
             // Header rather than ?key= so the key never appears in URLs or logs.
-            header(API_KEY_HEADER, apiKey)
+            header(API_KEY_HEADER, connection.apiKey)
             contentType(ContentType.Application.Json)
             setBody(GeminiRequestMapper.map(prompt, MAX_OUTPUT_TOKENS))
         }
@@ -62,13 +64,13 @@ class GeminiDataSource(private val httpClient: HttpClient) : LlmDataSource {
 
     private fun exceptionFailure(e: Exception): Outcome.Failure<TransformError> {
         log.w { "generateContent failed: ${e::class.simpleName}" }
-        return Outcome.Failure(GeminiErrorMapper.fromException(e))
+        return Outcome.Failure(HttpErrorMapper.fromException(e))
     }
 
     companion object {
         /** Fast, low-cost model; thinking is minimal by default, which suits short rewrites. */
         const val MODEL = "gemini-3.5-flash-lite"
-        private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+        const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
         private const val API_KEY_HEADER = "x-goog-api-key"
         private const val MAX_OUTPUT_TOKENS = 8_192
     }

@@ -15,7 +15,7 @@ import kotlinx.serialization.json.Json
 object HttpClientFactory {
 
     /** Headers that carry secrets and must never reach logs. */
-    val SENSITIVE_HEADERS = setOf("x-goog-api-key", "authorization")
+    val SENSITIVE_HEADERS = setOf("x-goog-api-key", "x-api-key", "authorization")
 
     fun create(
         enableLogging: Boolean,

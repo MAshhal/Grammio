@@ -1,6 +1,7 @@
 package com.mystic.grammio.data.transform
 
 import com.google.common.truth.Truth.assertThat
+import com.mystic.grammio.data.llm.LlmConnection
 import com.mystic.grammio.data.llm.LlmDataSource
 import com.mystic.grammio.data.llm.LlmPrompt
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
@@ -17,14 +18,14 @@ class TextTransformRepositoryImplTest {
 
     private class StubLlmDataSource(var reply: Outcome<String, TransformError>) : LlmDataSource {
         var lastPrompt: LlmPrompt? = null
-        var lastApiKey: String? = null
+        var lastConnection: LlmConnection? = null
 
         override suspend fun generate(
             prompt: LlmPrompt,
-            apiKey: String,
+            connection: LlmConnection,
         ) = reply.also {
             lastPrompt = prompt
-            lastApiKey = apiKey
+            lastConnection = connection
         }
     }
 
@@ -43,7 +44,7 @@ class TextTransformRepositoryImplTest {
 
         assertThat(result).isEqualTo(Outcome.Success(TransformedText("Hello.", Transformation.FixGrammar)))
         assertThat(llmDataSource.lastPrompt?.userText).contains("helo")
-        assertThat(llmDataSource.lastApiKey).isEqualTo("test-key")
+        assertThat(llmDataSource.lastConnection?.apiKey).isEqualTo("test-key")
     }
 
     @Test

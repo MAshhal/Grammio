@@ -1,6 +1,7 @@
 package com.mystic.grammio.data.llm.gemini
 
 import com.google.common.truth.Truth.assertThat
+import com.mystic.grammio.data.llm.LlmConnection
 import com.mystic.grammio.data.llm.LlmPrompt
 import com.mystic.grammio.data.network.HttpClientFactory
 import com.mystic.grammio.domain.error.TransformError
@@ -22,6 +23,8 @@ import org.junit.Test
 class GeminiDataSourceTest {
 
     private val prompt = LlmPrompt(systemInstruction = "SYSTEM", userText = "<text>\nhi\n</text>", temperature = 0.1)
+    private val connection =
+        LlmConnection(apiKey = "test-key", modelId = "test-model", baseUrl = "https://gemini.test/v1beta")
     private val requests = mutableListOf<HttpRequestData>()
 
     private fun dataSource(handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData) =
@@ -35,7 +38,7 @@ class GeminiDataSourceTest {
             ),
         )
 
-    private suspend fun GeminiDataSource.generate() = generate(prompt, apiKey = "test-key")
+    private suspend fun GeminiDataSource.generate() = generate(prompt, connection)
 
     private fun MockRequestHandleScope.json(
         body: String,
@@ -60,13 +63,13 @@ class GeminiDataSourceTest {
     }
 
     @Test
-    fun `request uses the key header, model endpoint and prompt`() = runTest {
+    fun `request uses the connection's key, base URL and model, and the prompt`() = runTest {
         val dataSource = dataSource { json("""{"candidates":[{"content":{"parts":[{"text":"ok"}]}}]}""") }
 
         dataSource.generate()
 
         val request = requests.single()
-        assertThat(request.url.toString()).endsWith("/v1beta/models/${GeminiDataSource.MODEL}:generateContent")
+        assertThat(request.url.toString()).isEqualTo("https://gemini.test/v1beta/models/test-model:generateContent")
         assertThat(request.url.parameters.names()).isEmpty()
         assertThat(request.headers["x-goog-api-key"]).isEqualTo("test-key")
         val body = request.body.toByteArray().decodeToString()
