@@ -21,6 +21,8 @@ import com.mystic.grammio.data.provider.ProviderSettingsRepositoryImpl
 import com.mystic.grammio.data.provider.local.DataStoreProviderPreferencesLocalDataSource
 import com.mystic.grammio.data.provider.local.ProviderPreferencesLocalDataSource
 import com.mystic.grammio.data.transform.TextTransformRepositoryImpl
+import com.mystic.grammio.data.transform.log.local.SqlDelightTransformationLogLocalDataSource
+import com.mystic.grammio.data.transform.log.local.TransformationLogLocalDataSource
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
 import com.mystic.grammio.domain.repository.ApiKeyRepository
@@ -28,6 +30,7 @@ import com.mystic.grammio.domain.repository.ModelCatalogRepository
 import com.mystic.grammio.domain.repository.ProviderSettingsRepository
 import com.mystic.grammio.domain.repository.TextTransformRepository
 import io.ktor.client.HttpClient
+import kotlin.time.Clock
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
@@ -39,6 +42,7 @@ private val providerSettingsStore = named("providerSettingsStore")
 
 val dataModule = module {
     single<HttpClient> { HttpClientFactory.create(enableLogging = BuildConfig.DEBUG) }
+    single<Clock> { Clock.System }
 
     // Two DataStore files, so both are qualified and their consumers use the classic DSL to pick one.
 
@@ -79,5 +83,6 @@ val dataModule = module {
 
     single<PromptBuilder>()
     single<ModelOutputSanitizer>()
+    single<SqlDelightTransformationLogLocalDataSource>() bind TransformationLogLocalDataSource::class
     single<TextTransformRepositoryImpl>() bind TextTransformRepository::class
 }

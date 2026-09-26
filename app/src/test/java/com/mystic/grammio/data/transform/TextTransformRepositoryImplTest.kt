@@ -10,8 +10,11 @@ import com.mystic.grammio.domain.model.AiProvider
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.model.TransformedText
 import com.mystic.grammio.domain.result.Outcome
+import com.mystic.grammio.domain.result.map
 import com.mystic.grammio.testing.FakeApiKeyLocalDataSource
 import com.mystic.grammio.testing.FakeProviderPreferencesLocalDataSource
+import com.mystic.grammio.testing.FixedClock
+import com.mystic.grammio.testing.RecordingTransformationLogLocalDataSource
 import com.mystic.grammio.testing.StubLlmDataSource
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -24,6 +27,8 @@ class TextTransformRepositoryImplTest {
     private val preferences = FakeProviderPreferencesLocalDataSource()
     private val llmDataSource = StubLlmDataSource(Outcome.Success("Hello."))
     private val anthropicDataSource = StubLlmDataSource(Outcome.Success("From Claude."))
+    private val transformationLog = RecordingTransformationLogLocalDataSource()
+    private val clock = FixedClock()
     private val repository = TextTransformRepositoryImpl(
         connectionResolver = ProviderConnectionResolver(apiKeyDataSource, preferences),
         promptBuilder = PromptBuilder(),
@@ -33,6 +38,8 @@ class TextTransformRepositoryImplTest {
             anthropic = anthropicDataSource,
         ),
         sanitizer = ModelOutputSanitizer(),
+        transformationLog = transformationLog,
+        clock = clock,
     )
 
     @Test
@@ -87,5 +94,53 @@ class TextTransformRepositoryImplTest {
 
         assertThat(repository.transform("x", Transformation.Shorten))
             .isEqualTo(Outcome.Failure(TransformError.Unknown))
+    }
+
+    @Test
+    fun `logs a success with the model that produced it`() = runTest {
+        preferences.setActiveProvider(AiProvider.Anthropic)
+        preferences.setSelectedModel(AiProvider.Anthropic, "claude-haiku-4-5")
+
+        repository.transform("hi", Transformation.Translate("es"))
+
+        val entry = transformationLog.entries.single()
+        assertThat(entry.startedAt).isEqualTo(clock.now)
+        assertThat(entry.transformation).isEqualTo(Transformation.Translate("es"))
+        assertThat(entry.provider).isEqualTo(AiProvider.Anthropic)
+        assertThat(entry.modelId).isEqualTo("claude-haiku-4-5")
+        assertThat(entry.inputText).isEqualTo("hi")
+        assertThat(entry.result).isEqualTo(Outcome.Success("From Claude."))
+    }
+
+    @Test
+    fun `logs the cleaned-up text, not the raw reply`() = runTest {
+        llmDataSource.reply = Outcome.Success("  \"Hello.\"  ")
+
+        val result = repository.transform("helo", Transformation.FixGrammar)
+
+        assertThat(transformationLog.entries.single().result).isEqualTo(result.map { it.text })
+    }
+
+    @Test
+    fun `logs an LLM failure with the model it happened on`() = runTest {
+        llmDataSource.reply = Outcome.Failure(TransformError.RateLimited)
+
+        repository.transform("x", Transformation.Shorten)
+
+        val entry = transformationLog.entries.single()
+        assertThat(entry.modelId).isNotNull()
+        assertThat(entry.result).isEqualTo(Outcome.Failure(TransformError.RateLimited))
+    }
+
+    @Test
+    fun `logs a provider that could not be resolved, without a model`() = runTest {
+        apiKeyDataSource.clear(AiProvider.Gemini)
+
+        repository.transform("x", Transformation.Shorten)
+
+        val entry = transformationLog.entries.single()
+        assertThat(entry.provider).isEqualTo(AiProvider.Gemini)
+        assertThat(entry.modelId).isNull()
+        assertThat(entry.result).isEqualTo(Outcome.Failure(TransformError.MissingApiKey))
     }
 }
