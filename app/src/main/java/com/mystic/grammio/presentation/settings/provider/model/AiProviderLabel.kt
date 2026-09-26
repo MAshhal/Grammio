@@ -1,4 +1,4 @@
-package com.mystic.grammio.presentation.settings.model
+package com.mystic.grammio.presentation.settings.provider.model
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable

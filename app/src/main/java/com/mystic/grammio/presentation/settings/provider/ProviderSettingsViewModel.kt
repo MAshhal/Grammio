@@ -1,10 +1,9 @@
-package com.mystic.grammio.presentation.settings
+package com.mystic.grammio.presentation.settings.provider
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mystic.grammio.domain.model.AiProvider
 import com.mystic.grammio.domain.repository.ApiKeyRepository
-import com.mystic.grammio.domain.repository.HistorySettingsRepository
 import com.mystic.grammio.domain.repository.ModelCatalogRepository
 import com.mystic.grammio.domain.repository.ProviderSettingsRepository
 import com.mystic.grammio.domain.result.Outcome
@@ -25,17 +24,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * Settings for the active provider (its key, its endpoint when it is a custom one, and its model),
- * plus the history opt-in.
+ * Settings for the active provider: its key, its endpoint when it is a custom one, and its model.
  * Saving a key or endpoint goes through use cases because they have rules; the rest has none, so it
  * uses the repositories directly rather than through pass-through use cases.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class SettingsViewModel(
+class ProviderSettingsViewModel(
     private val apiKeyRepository: ApiKeyRepository,
     private val providerSettings: ProviderSettingsRepository,
     private val modelCatalog: ModelCatalogRepository,
-    private val historySettings: HistorySettingsRepository,
     private val saveApiKey: SaveApiKeyUseCase,
     private val saveCustomEndpoint: SaveCustomEndpointUseCase,
 ) : ViewModel() {
@@ -69,14 +66,13 @@ class SettingsViewModel(
     /** The provider, key presence and endpoint the model list was last synced for. */
     private var modelsSyncedFor: Triple<AiProvider, Boolean, String?>? = null
 
-    val state: StateFlow<SettingsUiState> =
+    val state: StateFlow<ProviderSettingsUiState> =
         combine(
             stored.onEach(::syncModels),
             inputs,
             models,
-            historySettings.isHistoryEnabled,
-        ) { stored, inputs, models, isHistoryEnabled ->
-            SettingsUiState(
+        ) { stored, inputs, models ->
+            ProviderSettingsUiState(
                 provider = stored.provider,
                 hasApiKey = stored.hasApiKey,
                 keyInput = inputs.key,
@@ -86,42 +82,37 @@ class SettingsViewModel(
                 defaultModelId = providerSettings.defaultModel(stored.provider),
                 selectedModelId = stored.selectedModelId,
                 models = models,
-                isHistoryEnabled = isHistoryEnabled,
             )
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsUiState())
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProviderSettingsUiState())
 
-    fun onAction(action: SettingsAction) {
+    fun onAction(action: ProviderSettingsAction) {
         when (action) {
-            is SettingsAction.ProviderSelected -> {
+            is ProviderSettingsAction.ProviderSelected -> {
                 inputs.value = Inputs()
                 viewModelScope.launch { providerSettings.setActiveProvider(action.provider) }
             }
 
-            is SettingsAction.KeyInputChanged -> inputs.update { it.copy(key = action.value) }
+            is ProviderSettingsAction.KeyInputChanged -> inputs.update { it.copy(key = action.value) }
 
-            SettingsAction.Save -> viewModelScope.launch {
+            ProviderSettingsAction.Save -> viewModelScope.launch {
                 if (saveApiKey(activeProvider(), inputs.value.key)) inputs.update { it.copy(key = "") }
             }
 
-            SettingsAction.Clear -> viewModelScope.launch { apiKeyRepository.clear(activeProvider()) }
+            ProviderSettingsAction.Clear -> viewModelScope.launch { apiKeyRepository.clear(activeProvider()) }
 
-            is SettingsAction.BaseUrlInputChanged ->
+            is ProviderSettingsAction.BaseUrlInputChanged ->
                 inputs.update { it.copy(baseUrl = action.value, isBaseUrlInvalid = false) }
 
-            SettingsAction.SaveBaseUrl -> viewModelScope.launch {
+            ProviderSettingsAction.SaveBaseUrl -> viewModelScope.launch {
                 val saved = saveCustomEndpoint(inputs.value.baseUrl.orEmpty())
                 inputs.update { if (saved) it.copy(baseUrl = null) else it.copy(isBaseUrlInvalid = true) }
             }
 
-            is SettingsAction.ModelSelected -> viewModelScope.launch {
+            is ProviderSettingsAction.ModelSelected -> viewModelScope.launch {
                 providerSettings.setSelectedModel(activeProvider(), action.modelId)
             }
 
-            SettingsAction.RefreshModels -> viewModelScope.launch { loadModels(activeProvider()) }
-
-            is SettingsAction.HistoryToggled -> viewModelScope.launch {
-                historySettings.setHistoryEnabled(action.enabled)
-            }
+            ProviderSettingsAction.RefreshModels -> viewModelScope.launch { loadModels(activeProvider()) }
         }
     }
 

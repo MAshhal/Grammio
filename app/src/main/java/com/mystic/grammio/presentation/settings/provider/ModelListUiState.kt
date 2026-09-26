@@ -1,4 +1,4 @@
-package com.mystic.grammio.presentation.settings
+package com.mystic.grammio.presentation.settings.provider
 
 import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.AiModel

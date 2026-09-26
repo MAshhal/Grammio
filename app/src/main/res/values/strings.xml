@@ -15,9 +15,14 @@
     <string name="action_close">Close</string>
     <string name="action_retry">Retry</string>
     <string name="action_open_settings">Open settings</string>
+    <string name="action_back">Back</string>
     <string name="copied_to_clipboard">Copied</string>
 
     <!-- Settings -->
+    <string name="settings_provider_page_title">Provider and model</string>
+    <string name="settings_provider_page_description">AI provider, API key and model</string>
+    <string name="settings_history_page_title">History and privacy</string>
+    <string name="settings_history_page_description">Whether transformations are kept on this device</string>
     <string name="settings_how_to_use">Select text in any app, open the selection menu (⋮ or “More”), and tap Grammio to fix, rewrite, summarize or translate it.</string>
     <string name="settings_provider_title">AI provider</string>
     <string name="settings_api_key_title">API key</string>

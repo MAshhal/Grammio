@@ -1,4 +1,4 @@
-package com.mystic.grammio.presentation.settings.components
+package com.mystic.grammio.presentation.settings.provider.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,8 +18,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.mystic.grammio.domain.model.AiProvider
-import com.mystic.grammio.presentation.settings.model.descriptionRes
-import com.mystic.grammio.presentation.settings.model.label
+import com.mystic.grammio.presentation.settings.provider.model.descriptionRes
+import com.mystic.grammio.presentation.settings.provider.model.label
 
 /** One radio row per provider; the selected one runs transformations. */
 @Composable

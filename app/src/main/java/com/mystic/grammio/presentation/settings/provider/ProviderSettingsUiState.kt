@@ -1,8 +1,8 @@
-package com.mystic.grammio.presentation.settings
+package com.mystic.grammio.presentation.settings.provider
 
 import com.mystic.grammio.domain.model.AiProvider
 
-data class SettingsUiState(
+data class ProviderSettingsUiState(
     val provider: AiProvider = AiProvider.Gemini,
     val hasApiKey: Boolean = false,
     val keyInput: String = "",
@@ -13,7 +13,6 @@ data class SettingsUiState(
     val defaultModelId: String? = null,
     val selectedModelId: String? = null,
     val models: ModelListUiState = ModelListUiState.Idle,
-    val isHistoryEnabled: Boolean = false,
 ) {
     val canSave: Boolean get() = keyInput.isNotBlank()
 

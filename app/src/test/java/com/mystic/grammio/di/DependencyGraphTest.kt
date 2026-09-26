@@ -12,7 +12,8 @@ import com.mystic.grammio.domain.repository.TextTransformRepository
 import com.mystic.grammio.domain.usecase.TransformTextUseCase
 import com.mystic.grammio.presentation.process.ProcessTextInput
 import com.mystic.grammio.presentation.process.ProcessTextViewModel
-import com.mystic.grammio.presentation.settings.SettingsViewModel
+import com.mystic.grammio.presentation.settings.history.HistorySettingsViewModel
+import com.mystic.grammio.presentation.settings.provider.ProviderSettingsViewModel
 import io.mockk.mockk
 import org.junit.After
 import org.junit.Test
@@ -40,7 +41,8 @@ class DependencyGraphTest {
         assertThat(koin.get<ProviderSettingsRepository>()).isNotNull()
         assertThat(koin.get<ModelCatalogRepository>()).isNotNull()
         assertThat(koin.get<TransformTextUseCase>()).isNotNull()
-        assertThat(koin.get<SettingsViewModel>()).isNotNull()
+        assertThat(koin.get<ProviderSettingsViewModel>()).isNotNull()
+        assertThat(koin.get<HistorySettingsViewModel>()).isNotNull()
         assertThat(
             koin.get<ProcessTextViewModel> {
                 parametersOf(ProcessTextInput("hi", canReplace = true))

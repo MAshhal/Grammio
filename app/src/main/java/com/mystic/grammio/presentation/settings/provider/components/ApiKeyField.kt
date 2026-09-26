@@ -1,4 +1,4 @@
-package com.mystic.grammio.presentation.settings.components
+package com.mystic.grammio.presentation.settings.provider.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions

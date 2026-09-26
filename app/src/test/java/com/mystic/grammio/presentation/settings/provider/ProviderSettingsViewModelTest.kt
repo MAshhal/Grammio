@@ -1,4 +1,4 @@
-package com.mystic.grammio.presentation.settings
+package com.mystic.grammio.presentation.settings.provider
 
 import com.google.common.truth.Truth.assertThat
 import com.mystic.grammio.domain.error.TransformError
@@ -9,7 +9,6 @@ import com.mystic.grammio.domain.usecase.SaveApiKeyUseCase
 import com.mystic.grammio.domain.usecase.SaveCustomEndpointUseCase
 import com.mystic.grammio.testing.FakeModelCatalogRepository
 import com.mystic.grammio.testing.InMemoryApiKeyRepository
-import com.mystic.grammio.testing.InMemoryHistorySettingsRepository
 import com.mystic.grammio.testing.InMemoryProviderSettingsRepository
 import com.mystic.grammio.testing.MainDispatcherRule
 import kotlinx.coroutines.launch
@@ -19,7 +18,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 
-class SettingsViewModelTest {
+class ProviderSettingsViewModelTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
@@ -27,15 +26,13 @@ class SettingsViewModelTest {
     private val apiKeys = InMemoryApiKeyRepository()
     private val providerSettings = InMemoryProviderSettingsRepository()
     private val modelCatalog = FakeModelCatalogRepository()
-    private val historySettings = InMemoryHistorySettingsRepository()
 
     // Lazy: must be created after MainDispatcherRule has installed the test Main dispatcher.
     private val viewModel by lazy {
-        SettingsViewModel(
+        ProviderSettingsViewModel(
             apiKeyRepository = apiKeys,
             providerSettings = providerSettings,
             modelCatalog = modelCatalog,
-            historySettings = historySettings,
             saveApiKey = SaveApiKeyUseCase(apiKeys),
             saveCustomEndpoint = SaveCustomEndpointUseCase(providerSettings),
         )
@@ -48,12 +45,12 @@ class SettingsViewModelTest {
     @Test
     fun `saving stores the trimmed key for the active provider and clears the field`() = runTest {
         collectState()
-        viewModel.onAction(SettingsAction.ProviderSelected(AiProvider.Anthropic))
-        viewModel.onAction(SettingsAction.KeyInputChanged("  sk-ant-key  "))
+        viewModel.onAction(ProviderSettingsAction.ProviderSelected(AiProvider.Anthropic))
+        viewModel.onAction(ProviderSettingsAction.KeyInputChanged("  sk-ant-key  "))
         advanceUntilIdle()
         assertThat(viewModel.state.value.canSave).isTrue()
 
-        viewModel.onAction(SettingsAction.Save)
+        viewModel.onAction(ProviderSettingsAction.Save)
         advanceUntilIdle()
 
         assertThat(apiKeys.saved).containsExactly(AiProvider.Anthropic, "sk-ant-key")
@@ -69,12 +66,12 @@ class SettingsViewModelTest {
         collectState()
         apiKeys.save(AiProvider.Gemini, "g")
         apiKeys.save(AiProvider.OpenAi, "o")
-        viewModel.onAction(SettingsAction.KeyInputChanged("   "))
-        viewModel.onAction(SettingsAction.Save)
+        viewModel.onAction(ProviderSettingsAction.KeyInputChanged("   "))
+        viewModel.onAction(ProviderSettingsAction.Save)
         advanceUntilIdle()
         assertThat(viewModel.state.value.canSave).isFalse()
 
-        viewModel.onAction(SettingsAction.Clear)
+        viewModel.onAction(ProviderSettingsAction.Clear)
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.hasApiKey).isFalse()
@@ -87,10 +84,10 @@ class SettingsViewModelTest {
         val models = listOf(AiModel("gpt-a", "gpt-a"))
         modelCatalog.result = Outcome.Success(models)
         apiKeys.save(AiProvider.OpenAi, "o")
-        viewModel.onAction(SettingsAction.KeyInputChanged("typed for gemini"))
+        viewModel.onAction(ProviderSettingsAction.KeyInputChanged("typed for gemini"))
         advanceUntilIdle()
 
-        viewModel.onAction(SettingsAction.ProviderSelected(AiProvider.OpenAi))
+        viewModel.onAction(ProviderSettingsAction.ProviderSelected(AiProvider.OpenAi))
         advanceUntilIdle()
 
         with(viewModel.state.value) {
@@ -111,13 +108,13 @@ class SettingsViewModelTest {
         assertThat(modelCatalog.requested).isEmpty()
 
         modelCatalog.result = Outcome.Failure(TransformError.InvalidApiKey)
-        viewModel.onAction(SettingsAction.KeyInputChanged("bad"))
-        viewModel.onAction(SettingsAction.Save)
+        viewModel.onAction(ProviderSettingsAction.KeyInputChanged("bad"))
+        viewModel.onAction(ProviderSettingsAction.Save)
         advanceUntilIdle()
         assertThat(viewModel.state.value.models).isEqualTo(ModelListUiState.Failed(TransformError.InvalidApiKey))
 
         modelCatalog.result = Outcome.Success(emptyList())
-        viewModel.onAction(SettingsAction.RefreshModels)
+        viewModel.onAction(ProviderSettingsAction.RefreshModels)
         advanceUntilIdle()
         assertThat(viewModel.state.value.models).isEqualTo(ModelListUiState.Loaded(emptyList()))
     }
@@ -126,19 +123,19 @@ class SettingsViewModelTest {
     fun `custom endpoint lists models only once its base URL is saved`() = runTest {
         collectState()
         apiKeys.save(AiProvider.OpenAiCompatible, "c")
-        viewModel.onAction(SettingsAction.ProviderSelected(AiProvider.OpenAiCompatible))
+        viewModel.onAction(ProviderSettingsAction.ProviderSelected(AiProvider.OpenAiCompatible))
         advanceUntilIdle()
         assertThat(viewModel.state.value.needsBaseUrl).isTrue()
         assertThat(viewModel.state.value.defaultModelId).isNull()
         assertThat(modelCatalog.requested).isEmpty()
 
-        viewModel.onAction(SettingsAction.BaseUrlInputChanged("http://insecure.test"))
-        viewModel.onAction(SettingsAction.SaveBaseUrl)
+        viewModel.onAction(ProviderSettingsAction.BaseUrlInputChanged("http://insecure.test"))
+        viewModel.onAction(ProviderSettingsAction.SaveBaseUrl)
         advanceUntilIdle()
         assertThat(viewModel.state.value.isBaseUrlInvalid).isTrue()
 
-        viewModel.onAction(SettingsAction.BaseUrlInputChanged("https://llm.test/v1/"))
-        viewModel.onAction(SettingsAction.SaveBaseUrl)
+        viewModel.onAction(ProviderSettingsAction.BaseUrlInputChanged("https://llm.test/v1/"))
+        viewModel.onAction(ProviderSettingsAction.SaveBaseUrl)
         advanceUntilIdle()
 
         with(viewModel.state.value) {
@@ -154,25 +151,12 @@ class SettingsViewModelTest {
     fun `selecting a model stores it for the active provider, and null goes back to the default`() = runTest {
         collectState()
 
-        viewModel.onAction(SettingsAction.ModelSelected("gemini-pro"))
+        viewModel.onAction(ProviderSettingsAction.ModelSelected("gemini-pro"))
         advanceUntilIdle()
         assertThat(viewModel.state.value.selectedModelId).isEqualTo("gemini-pro")
 
-        viewModel.onAction(SettingsAction.ModelSelected(null))
+        viewModel.onAction(ProviderSettingsAction.ModelSelected(null))
         advanceUntilIdle()
         assertThat(viewModel.state.value.selectedModelId).isNull()
-    }
-
-    @Test
-    fun `history is off until the user turns it on`() = runTest {
-        collectState()
-        advanceUntilIdle()
-        assertThat(viewModel.state.value.isHistoryEnabled).isFalse()
-
-        viewModel.onAction(SettingsAction.HistoryToggled(true))
-        advanceUntilIdle()
-
-        assertThat(historySettings.isHistoryEnabled.value).isTrue()
-        assertThat(viewModel.state.value.isHistoryEnabled).isTrue()
     }
 }

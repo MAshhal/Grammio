@@ -1,4 +1,4 @@
-package com.mystic.grammio.presentation.settings.components
+package com.mystic.grammio.presentation.settings.provider.components
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.mystic.grammio.R
 import com.mystic.grammio.domain.model.AiModel
 import com.mystic.grammio.presentation.common.message
-import com.mystic.grammio.presentation.settings.ModelListUiState
+import com.mystic.grammio.presentation.settings.provider.ModelListUiState
 
 /**
  * The model to use: the provider's default (when it has one) or any model its API listed.

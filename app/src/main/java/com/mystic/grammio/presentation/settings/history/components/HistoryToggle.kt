@@ -1,4 +1,4 @@
-package com.mystic.grammio.presentation.settings.components
+package com.mystic.grammio.presentation.settings.history.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
