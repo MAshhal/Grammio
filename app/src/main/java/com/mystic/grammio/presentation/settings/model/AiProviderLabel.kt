@@ -1,5 +1,6 @@
 package com.mystic.grammio.presentation.settings.model
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.mystic.grammio.R
@@ -15,3 +16,11 @@ fun AiProvider.label(): String = stringResource(
         AiProvider.OpenAiCompatible -> R.string.provider_openai_compatible
     },
 )
+
+/** A line under the name, only where the name alone doesn't say what the option is. */
+@get:StringRes
+val AiProvider.descriptionRes: Int?
+    get() = when (this) {
+        AiProvider.OpenAiCompatible -> R.string.provider_openai_compatible_description
+        AiProvider.Gemini, AiProvider.OpenAi, AiProvider.Anthropic -> null
+    }

@@ -22,6 +22,8 @@
     <string name="settings_key_missing">No key yet. Grammio needs one to work.</string>
     <string name="settings_enter_key">Paste your API key</string>
     <string name="settings_replace_key">Paste a new key to replace it</string>
+    <string name="settings_show_key">Show key</string>
+    <string name="settings_hide_key">Hide key</string>
     <string name="settings_get_key_gemini">Get a free key at aistudio.google.com</string>
     <string name="settings_get_key_openai">Get a key at platform.openai.com</string>
     <string name="settings_get_key_anthropic">Get a key at platform.claude.com</string>
@@ -49,6 +51,7 @@
     <string name="provider_openai">OpenAI</string>
     <string name="provider_anthropic">Anthropic Claude</string>
     <string name="provider_openai_compatible">OpenAI-compatible endpoint</string>
+    <string name="provider_openai_compatible_description">OpenRouter, Groq and other services with an OpenAI-style API</string>
 
     <!-- Transformations -->
     <string name="transformation_fix_grammar">Fix grammar</string>

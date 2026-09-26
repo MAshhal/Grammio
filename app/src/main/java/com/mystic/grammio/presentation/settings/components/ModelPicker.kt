@@ -1,16 +1,26 @@
 package com.mystic.grammio.presentation.settings.components
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.Memory
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -58,7 +68,7 @@ fun ModelPicker(
                 onValueChange = {},
                 readOnly = true,
                 singleLine = true,
-                label = { Text(stringResource(R.string.settings_model_title)) },
+                leadingIcon = { Icon(Icons.Outlined.Memory, contentDescription = null) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 modifier = Modifier
                     .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
@@ -68,6 +78,7 @@ fun ModelPicker(
                 if (defaultModelId != null) {
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.settings_model_default, defaultModelId)) },
+                        trailingIcon = { SelectedMark(selectedModelId == null) },
                         onClick = {
                             onSelect(null)
                             expanded = false
@@ -77,6 +88,7 @@ fun ModelPicker(
                 listed.forEach { model ->
                     DropdownMenuItem(
                         text = { ModelItem(model) },
+                        trailingIcon = { SelectedMark(model.id == selectedModelId) },
                         onClick = {
                             onSelect(model.id)
                             expanded = false
@@ -87,6 +99,11 @@ fun ModelPicker(
         }
         ModelListStatus(models, onRefresh)
     }
+}
+
+@Composable
+private fun SelectedMark(selected: Boolean) {
+    if (selected) Icon(Icons.Filled.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
 }
 
 @Composable
@@ -108,7 +125,13 @@ private fun ModelListStatus(
     models: ModelListUiState,
     onRefresh: () -> Unit,
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 40.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         when (models) {
             ModelListUiState.Idle -> Text(
                 stringResource(R.string.settings_models_need_setup),
@@ -127,7 +150,8 @@ private fun ModelListStatus(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                TextButton(onClick = onRefresh) { Text(stringResource(R.string.action_refresh)) }
+                Spacer(Modifier.weight(1f))
+                RefreshButton(R.string.action_refresh, onRefresh)
             }
 
             is ModelListUiState.Failed -> {
@@ -137,8 +161,20 @@ private fun ModelListStatus(
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.weight(1f),
                 )
-                TextButton(onClick = onRefresh) { Text(stringResource(R.string.action_retry)) }
+                RefreshButton(R.string.action_retry, onRefresh)
             }
         }
+    }
+}
+
+@Composable
+private fun RefreshButton(
+    @StringRes label: Int,
+    onClick: () -> Unit,
+) {
+    TextButton(onClick = onClick, contentPadding = ButtonDefaults.TextButtonWithIconContentPadding) {
+        Icon(Icons.Outlined.Refresh, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+        Text(stringResource(label))
     }
 }
