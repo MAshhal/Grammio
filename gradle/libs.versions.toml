@@ -1,8 +1,8 @@
 [versions]
 # Application
-app-version-major = "0"
+app-version-major = "1"
 app-version-minor = "0"
-app-version-patch = "1"
+app-version-patch = "0"
 
 # Android
 android-minSdk = "26"

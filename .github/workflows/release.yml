@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build localRelease APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleLocalRelease
+          cp app/build/outputs/apk/localRelease/app-localRelease.apk "grammio-${GITHUB_REF_NAME}.apk"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > notes.md <<EOF
+          > [!WARNING]
+          > **This APK is signed with a throwaway debug key generated on the CI runner.**
+          > It is provided for convenience only. The key changes on every build, so you
+          > cannot update from one release to the next without uninstalling first (which
+          > wipes your saved API keys and settings), and the signature proves nothing
+          > about who built it. **It is recommended that you build and sign the APK yourself.**
+
+          ## Build and sign it yourself
+
+          Requirements: JDK 17+ and the Android SDK (easiest via Android Studio).
+
+          1. Get the source for this release:
+             \`\`\`sh
+             git clone https://github.com/${GITHUB_REPOSITORY}.git
+             cd $(basename "${GITHUB_REPOSITORY}")
+             git checkout ${GITHUB_REF_NAME}
+             \`\`\`
+          2. Create a signing key once and keep it safe; reuse it for every future build
+             so updates install over each other:
+             \`\`\`sh
+             keytool -genkeypair -v -keystore grammio.jks -alias grammio \\
+               -keyalg RSA -keysize 4096 -validity 10000
+             \`\`\`
+          3. Build the unsigned release APK:
+             \`\`\`sh
+             ./gradlew assembleRelease
+             \`\`\`
+             Output: \`app/build/outputs/apk/release/app-release-unsigned.apk\`
+          4. Sign it with \`apksigner\` from the Android SDK (\`<sdk>/build-tools/<version>/\`):
+             \`\`\`sh
+             apksigner sign --ks grammio.jks --ks-key-alias grammio \\
+               --out grammio.apk app/build/outputs/apk/release/app-release-unsigned.apk
+             apksigner verify --print-certs grammio.apk
+             \`\`\`
+          5. Install: \`adb install grammio.apk\`, or copy it to your phone and open it.
+
+          Prefer a UI? In Android Studio use **Build → Generate Signed App Bundle / APK…**,
+          choose **APK**, create or pick your keystore, and select the \`release\` build type.
+          EOF
+
+          gh release create "$GITHUB_REF_NAME" "grammio-${GITHUB_REF_NAME}.apk" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file notes.md
