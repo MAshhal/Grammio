@@ -30,10 +30,10 @@ below, is broken.
 
 | Package | Holds | Example |
 |---|---|---|
-| `domain/model` | Business types | `Transformation`, `AiProvider`, `AiModel` |
+| `domain/model` | Business types | `Transformation`, `TransformationIcon`, `AiProvider`, `AiModel` |
 | `domain/error` | The closed set of failures | `TransformError` |
 | `domain/result` | The success-or-typed-failure type | `Outcome` |
-| `domain/repository` | Interfaces the domain needs from the outside world | `TextTransformRepository`, `ModelCatalogRepository` |
+| `domain/repository` | Interfaces the domain needs from the outside world | `TextTransformRepository`, `TransformationRepository` |
 | `domain/usecase` | One application rule each | `TransformTextUseCase` |
 | `data/<concept>` | The repository implementation for that concept | `data/transform/TextTransformRepositoryImpl` |
 | `data/provider` | Provider defaults, stored settings, and turning them into a connection | `ProviderDefaults`, `ProviderConnectionResolver` |
@@ -42,6 +42,7 @@ below, is broken.
 | `data/**/dto` | Wire models | `GenerateContentRequestDto` |
 | `data/**/mapper` | Pure conversions between wire models and app types | `GeminiErrorMapper` |
 | `presentation/<screen>` | Activity, ViewModel, UiState, Action, Effect, Screen | `presentation/process/*` |
+| `presentation/settings/<page>` | One Settings page: ViewModel, UiState, Action, Screen | `presentation/settings/provider/*` |
 | `presentation/<screen>/components` | Stateless composables used by that screen | `ResultCard` |
 | `presentation/<screen>/model` | UI mapping of domain types (labels, messages, options) | `TransformErrorMessage` |
 | `presentation/common`, `presentation/theme` | Shared UI helpers and theme | `Clipboard`, `GrammioTheme` |
@@ -59,11 +60,34 @@ below, is broken.
 | `*UiState` / `*Action` / `*Effect` | Screen state, user intents, one-off events | Immutable data. The ViewModel is the only thing that creates state. |
 | `*ViewModel` | Screen logic | Exposes `StateFlow` state and a `Flow` of effects, and takes actions through `onAction`. |
 | `*Activity` | Host | Parses the Intent, renders the screen and performs effects. Contains no logic. |
+| `*Route` | Navigation key | `@Serializable` `NavKey`, so the back stack survives process death. |
 
 **Use cases are pragmatic.** A ViewModel may call a repository interface directly when a use case
 would only pass the call through. `SettingsViewModel` observes and clears the key through
 `ApiKeyRepository`, but saves through `SaveApiKeyUseCase` because saving has rules (trim the key,
 refuse a blank one).
+
+## Settings navigation
+
+`SettingsActivity` is the only settings activity. It hosts `SettingsNavigation`, a Navigation3
+`NavDisplay` over a back stack of `SettingsRoute`s:
+
+```
+Home ─┬─ Provider            provider, endpoint, API key, model
+      ├─ Transformations ─── TransformationEditor(id)   (null id = new)
+      ├─ SystemPrompt
+      └─ History             history switch, privacy note
+```
+
+- Each entry gets its own `ViewModelStore` (`rememberViewModelStoreNavEntryDecorator`), so a page's
+  ViewModel lives exactly as long as the page is on the stack. Pages get theirs with `koinViewModel()`.
+- Screens take `onBack` and navigation lambdas; they never touch the back stack themselves. A
+  ViewModel that needs to leave its page emits an effect (the editor's `Close`).
+- `SettingsActivity.providerIntent` and `transformationsIntent` open Settings on a page with Home
+  underneath. The process sheet uses them to send the user to the page that fixes the problem.
+
+To add a page: add a `SettingsRoute`, an `entry<>` in `SettingsNavigation`, a row on
+`SettingsHomeScreen`, and register its ViewModel in `PresentationModule`.
 
 **API keys never leave `data/`.** Each provider has its own encrypted key, and only
 `ApiKeyLocalDataSource` can read one back. `ProviderConnectionResolver` puts it into the
@@ -97,6 +121,46 @@ To add a provider:
 
 The exhaustive `when`s in steps 1, 2, 4 and 5 fail to compile until each one is done.
 
+## Transformations
+
+A `Transformation` is user data: an id, a name, a task prompt, an icon, an on/off switch and a
+temperature (not shown to the user). `TransformationRepository` keeps them in the `transformation`
+table of `grammio.db`, in the order the user arranged them.
+
+- **Defaults.** `DefaultTransformations` holds the five that ship with the app. The repository adds
+  them the first time anything reads or changes the list, then sets a flag in the
+  `transformation_settings` DataStore file, so deleting them all doesn't bring them back.
+  "Restore defaults" writes them again with their original content and leaves the user's own alone.
+- **Ids.** The defaults keep the storage keys the old hard-coded transformations had
+  (`fix_grammar`, `translate`, ...), so older history rows still match. New ones get a random UUID
+  from `SaveTransformationUseCase`.
+- **Target language.** A task prompt containing `{language}` (`Transformation.LANGUAGE_PLACEHOLDER`)
+  makes the sheet show the language picker. `PromptBuilder` replaces the placeholder with the
+  language's English name.
+- **Icons.** `TransformationIcon` is a closed set. It is stored by `storageKey`, drawn through
+  `presentation/common/TransformationIconVector.kt`, and an unknown key falls back to `Sparkle`.
+
+### Prompt
+
+`PromptBuilder` composes the system instruction from three parts:
+
+```
+<system prompt>          PromptSettingsRepository: the user's own, or DefaultSystemPrompt
+
+Task: <task prompt>      with {language} replaced
+<language line>          "Write the output in German." or "Reply in the same language as the input text."
+```
+
+The user's text always goes in the user message, wrapped in `<text></text>`. Only a system prompt
+that differs from the default is stored (`prompt_settings` DataStore file), so later changes to the
+default still apply to everyone who never edited it.
+
+### Schema changes
+
+`grammio.db` is migrated with SQLDelight `.sqm` files next to the `.sq` files. `1.sqm` added the
+`transformation` table. The `.sq` files always describe the latest schema; each migration must
+produce the same result, and `GrammioDatabaseMigrationTest` upgrades a version 1 database to check.
+
 ## Transformation log
 
 Shown to the user as "history". It is opt-in: nothing is recorded until the Settings switch
@@ -105,10 +169,12 @@ Shown to the user as "history". It is opt-in: nothing is recorded until the Sett
 While it is on, `TextTransformRepositoryImpl` records every attempt, successful or not, through
 `TransformationLogLocalDataSource` into the `transformation_log` table of `grammio.db`
 (SQLDelight, schema in `src/main/sqldelight`). Each row holds the input text, the cleaned-up
-output or the error, the transformation (plus target language), provider, model and duration.
+output or the error, the transformation's id (plus the target language when it used one), provider,
+model and duration.
 
 - Turning history off stops recording; it does not delete what was already saved.
-- Transformations, providers and errors are stored by their `storageKey`, never the Kotlin name.
+- Transformations are stored by id; providers and errors by their `storageKey`, never the Kotlin
+  name. A logged id may belong to a transformation that has since been edited or deleted.
 - Recording is best effort: a database failure is logged and never costs the user their result.
 - Input rejected by `TransformTextUseCase` (blank, too long) never reaches the repository, so it
   is not logged.

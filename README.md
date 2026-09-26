@@ -7,8 +7,11 @@ it. Copy the result or replace the selected text in place.
 
 ## Features
 
-- **Transformations:** fix grammar, rephrase, make it professional or casual, shorten, expand,
-  summarize, or translate.
+- **Your own transformations:** comes with fix grammar, professional, summarize, rephrase and
+  translate. Edit their prompts, reorder or turn them off, or add your own with a name, a task and an
+  icon. Write `{language}` in a task and Grammio lets you pick the target language.
+- **Editable system prompt:** see and change the instructions sent with every transformation, and
+  reset them to the default at any time.
 - **Works everywhere:** anywhere Android lets you select text, with no keyboard or accessibility
   service to set up.
 - **Bring your own key:** Google Gemini, OpenAI, Anthropic, or any OpenAI-compatible endpoint
@@ -20,8 +23,8 @@ it. Copy the result or replace the selected text in place.
 ## Getting started
 
 1. Install the app (Android 8.0 or newer).
-2. Open Grammio, choose a provider and paste your API key. Gemini has a free tier at
-   [aistudio.google.com](https://aistudio.google.com).
+2. Open Grammio, go to **Provider and model**, choose a provider and paste your API key. Gemini has
+   a free tier at [aistudio.google.com](https://aistudio.google.com).
 3. Select text in any app and tap **Grammio** in the selection menu.
 
 ## Building
