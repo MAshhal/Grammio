@@ -39,3 +39,6 @@ SELECT *
 FROM transformation_log
 ORDER BY created_at DESC, id DESC
 LIMIT :limit;
+
+deleteAll:
+DELETE FROM transformation_log;

@@ -24,6 +24,7 @@ import com.mystic.grammio.data.provider.ProviderSettingsRepositoryImpl
 import com.mystic.grammio.data.provider.local.DataStoreProviderPreferencesLocalDataSource
 import com.mystic.grammio.data.provider.local.ProviderPreferencesLocalDataSource
 import com.mystic.grammio.data.transform.TextTransformRepositoryImpl
+import com.mystic.grammio.data.transform.log.HistoryRepositoryImpl
 import com.mystic.grammio.data.transform.log.HistorySettingsRepositoryImpl
 import com.mystic.grammio.data.transform.log.local.DataStoreTransformationLogPreferencesLocalDataSource
 import com.mystic.grammio.data.transform.log.local.SqlDelightTransformationLogLocalDataSource
@@ -37,6 +38,7 @@ import com.mystic.grammio.data.transformation.local.SqlDelightTransformationLoca
 import com.mystic.grammio.data.transformation.local.TransformationLocalDataSource
 import com.mystic.grammio.data.transformation.local.TransformationPreferencesLocalDataSource
 import com.mystic.grammio.domain.repository.ApiKeyRepository
+import com.mystic.grammio.domain.repository.HistoryRepository
 import com.mystic.grammio.domain.repository.HistorySettingsRepository
 import com.mystic.grammio.domain.repository.ModelCatalogRepository
 import com.mystic.grammio.domain.repository.PromptSettingsRepository
@@ -137,5 +139,6 @@ val dataModule = module {
     } bind TransformationLogPreferencesLocalDataSource::class
     single<HistorySettingsRepositoryImpl>() bind HistorySettingsRepository::class
     single<SqlDelightTransformationLogLocalDataSource>() bind TransformationLogLocalDataSource::class
+    single<HistoryRepositoryImpl>() bind HistoryRepository::class
     single<TextTransformRepositoryImpl>() bind TextTransformRepository::class
 }

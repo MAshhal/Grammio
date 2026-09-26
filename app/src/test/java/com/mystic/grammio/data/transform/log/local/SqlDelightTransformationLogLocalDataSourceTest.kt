@@ -7,11 +7,13 @@ import com.mystic.grammio.data.db.Transformation_log
 import com.mystic.grammio.data.transform.log.TransformationLogEntry
 import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.AiProvider
+import com.mystic.grammio.domain.model.HistoryEntry
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.result.Outcome
 import com.mystic.grammio.testing.TestTransformations
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Instant
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Test
@@ -78,6 +80,78 @@ class SqlDelightTransformationLogLocalDataSourceTest {
         dataSource.record(entry(inputText = "second", startedAt = Instant.fromEpochMilliseconds(2)))
 
         assertThat(rows().map { it.input_text }).containsExactly("second", "first").inOrder()
+    }
+
+    @Test
+    fun `reads entries back, newest first, limited`() = runTest {
+        dataSource.record(entry(inputText = "oldest", startedAt = Instant.fromEpochMilliseconds(1)))
+        dataSource.record(
+            entry(
+                inputText = "failed",
+                startedAt = Instant.fromEpochMilliseconds(2),
+                modelId = null,
+                result = Outcome.Failure(TransformError.MissingApiKey),
+            ),
+        )
+        dataSource.record(
+            entry(
+                transformation = TestTransformations.translate,
+                targetLanguageTag = "es",
+                inputText = "Hello.",
+                startedAt = Instant.fromEpochMilliseconds(3),
+                result = Outcome.Success("Hola."),
+            ),
+        )
+
+        assertThat(dataSource.recent(limit = 2).first()).containsExactly(
+            HistoryEntry(
+                id = 3,
+                startedAt = Instant.fromEpochMilliseconds(3),
+                transformationId = "translate",
+                targetLanguageTag = "es",
+                modelId = "claude-haiku-4-5",
+                inputText = "Hello.",
+                result = Outcome.Success("Hola."),
+            ),
+            HistoryEntry(
+                id = 2,
+                startedAt = Instant.fromEpochMilliseconds(2),
+                transformationId = "fix_grammar",
+                targetLanguageTag = null,
+                modelId = null,
+                inputText = "failed",
+                result = Outcome.Failure(TransformError.MissingApiKey),
+            ),
+        ).inOrder()
+    }
+
+    @Test
+    fun `an error this version doesn't know reads as unknown`() = runTest {
+        database.transformationLogQueries.insert(
+            created_at = 1,
+            transformation = "fix_grammar",
+            target_language = null,
+            provider = "gemini",
+            model_id = "gemini-2.5-flash",
+            input_text = "Hello.",
+            output_text = null,
+            error = "from_the_future",
+            duration_ms = 5,
+        )
+
+        assertThat(dataSource.recent(limit = 1).first().single().result)
+            .isEqualTo(Outcome.Failure(TransformError.Unknown))
+    }
+
+    @Test
+    fun `clear deletes every entry`() = runTest {
+        dataSource.record(entry())
+        dataSource.record(entry())
+
+        dataSource.clear()
+
+        assertThat(rows()).isEmpty()
+        assertThat(dataSource.recent(limit = 10).first()).isEmpty()
     }
 
     @Test

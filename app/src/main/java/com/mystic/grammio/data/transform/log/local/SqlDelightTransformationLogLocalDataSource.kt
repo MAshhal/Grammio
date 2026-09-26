@@ -1,13 +1,19 @@
 package com.mystic.grammio.data.transform.log.local
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
 import co.touchlab.kermit.Logger
 import com.mystic.grammio.data.db.GrammioDatabase
 import com.mystic.grammio.data.provider.storageKey
 import com.mystic.grammio.data.transform.log.TransformationLogEntry
+import com.mystic.grammio.data.transform.log.mapper.toDomain
 import com.mystic.grammio.data.transform.log.storageKey
+import com.mystic.grammio.domain.model.HistoryEntry
 import com.mystic.grammio.domain.result.Outcome
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 /** The transformation log in the app's SQLite database. */
@@ -15,6 +21,7 @@ class SqlDelightTransformationLogLocalDataSource(private val database: GrammioDa
     TransformationLogLocalDataSource {
 
     private val log = Logger.withTag("TransformationLog")
+    private val queries get() = database.transformationLogQueries
 
     override suspend fun record(entry: TransformationLogEntry) {
         try {
@@ -27,8 +34,17 @@ class SqlDelightTransformationLogLocalDataSource(private val database: GrammioDa
         }
     }
 
+    override fun recent(limit: Int): Flow<List<HistoryEntry>> = queries.selectRecent(limit.toLong())
+        .asFlow()
+        .mapToList(Dispatchers.IO)
+        .map { rows -> rows.map { it.toDomain() } }
+
+    override suspend fun clear() {
+        withContext(Dispatchers.IO) { queries.deleteAll() }
+    }
+
     private fun insert(entry: TransformationLogEntry) {
-        database.transformationLogQueries.insert(
+        queries.insert(
             created_at = entry.startedAt.toEpochMilliseconds(),
             transformation = entry.transformation.id,
             target_language = entry.targetLanguageTag,
