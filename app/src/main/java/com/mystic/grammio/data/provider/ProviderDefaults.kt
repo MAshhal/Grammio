@@ -19,7 +19,7 @@ object ProviderDefaults {
      */
     fun model(provider: AiProvider): String? = when (provider) {
         AiProvider.Gemini -> "gemini-3.5-flash-lite"
-        AiProvider.OpenAi -> "gpt-5.4-nano"
+        AiProvider.OpenAi -> "gpt-5-nano"
         AiProvider.Anthropic -> "claude-haiku-4-5"
         AiProvider.OpenAiCompatible -> null
     }
