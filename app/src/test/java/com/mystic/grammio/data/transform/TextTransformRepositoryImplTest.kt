@@ -13,6 +13,7 @@ import com.mystic.grammio.domain.result.Outcome
 import com.mystic.grammio.domain.result.map
 import com.mystic.grammio.testing.FakeApiKeyLocalDataSource
 import com.mystic.grammio.testing.FakeProviderPreferencesLocalDataSource
+import com.mystic.grammio.testing.FakeTransformationLogPreferencesLocalDataSource
 import com.mystic.grammio.testing.FixedClock
 import com.mystic.grammio.testing.RecordingTransformationLogLocalDataSource
 import com.mystic.grammio.testing.StubLlmDataSource
@@ -28,6 +29,7 @@ class TextTransformRepositoryImplTest {
     private val llmDataSource = StubLlmDataSource(Outcome.Success("Hello."))
     private val anthropicDataSource = StubLlmDataSource(Outcome.Success("From Claude."))
     private val transformationLog = RecordingTransformationLogLocalDataSource()
+    private val logPreferences = FakeTransformationLogPreferencesLocalDataSource(enabled = true)
     private val clock = FixedClock()
     private val repository = TextTransformRepositoryImpl(
         connectionResolver = ProviderConnectionResolver(apiKeyDataSource, preferences),
@@ -39,6 +41,7 @@ class TextTransformRepositoryImplTest {
         ),
         sanitizer = ModelOutputSanitizer(),
         transformationLog = transformationLog,
+        logPreferences = logPreferences,
         clock = clock,
     )
 
@@ -110,6 +113,16 @@ class TextTransformRepositoryImplTest {
         assertThat(entry.modelId).isEqualTo("claude-haiku-4-5")
         assertThat(entry.inputText).isEqualTo("hi")
         assertThat(entry.result).isEqualTo(Outcome.Success("From Claude."))
+    }
+
+    @Test
+    fun `logs nothing unless history is on`() = runTest {
+        logPreferences.setEnabled(false)
+
+        val result = repository.transform("helo", Transformation.FixGrammar)
+
+        assertThat(result).isEqualTo(Outcome.Success(TransformedText("Hello.", Transformation.FixGrammar)))
+        assertThat(transformationLog.entries).isEmpty()
     }
 
     @Test

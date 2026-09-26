@@ -5,6 +5,7 @@ import com.mystic.grammio.data.llm.LlmDataSourceRegistry
 import com.mystic.grammio.data.provider.ProviderConnectionResolver
 import com.mystic.grammio.data.transform.log.TransformationLogEntry
 import com.mystic.grammio.data.transform.log.local.TransformationLogLocalDataSource
+import com.mystic.grammio.data.transform.log.local.TransformationLogPreferencesLocalDataSource
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
 import com.mystic.grammio.domain.error.TransformError
@@ -16,10 +17,12 @@ import com.mystic.grammio.domain.result.Outcome
 import com.mystic.grammio.domain.result.map
 import kotlin.time.Clock
 import kotlin.time.TimeSource
+import kotlinx.coroutines.flow.first
 
 /**
  * Orchestrates a transformation: active provider → connection → prompt → LLM → cleaned-up text.
- * Every attempt that gets this far, successful or not, is recorded in the transformation log.
+ * When the user has opted in, every attempt that gets this far, successful or not, is recorded in
+ * the transformation log.
  */
 class TextTransformRepositoryImpl(
     private val connectionResolver: ProviderConnectionResolver,
@@ -27,6 +30,7 @@ class TextTransformRepositoryImpl(
     private val llmDataSources: LlmDataSourceRegistry,
     private val sanitizer: ModelOutputSanitizer,
     private val transformationLog: TransformationLogLocalDataSource,
+    private val logPreferences: TransformationLogPreferencesLocalDataSource,
     private val clock: Clock,
 ) : TextTransformRepository {
 
@@ -43,17 +47,19 @@ class TextTransformRepositoryImpl(
             is Outcome.Success -> generate(text, transformation, provider, connection.value)
         }
 
-        transformationLog.record(
-            TransformationLogEntry(
-                startedAt = startedAt,
-                transformation = transformation,
-                provider = provider,
-                modelId = (connection as? Outcome.Success)?.value?.modelId,
-                inputText = text,
-                result = result.map { it.text },
-                duration = started.elapsedNow(),
-            ),
-        )
+        if (logPreferences.isEnabled.first()) {
+            transformationLog.record(
+                TransformationLogEntry(
+                    startedAt = startedAt,
+                    transformation = transformation,
+                    provider = provider,
+                    modelId = (connection as? Outcome.Success)?.value?.modelId,
+                    inputText = text,
+                    result = result.map { it.text },
+                    duration = started.elapsedNow(),
+                ),
+            )
+        }
         return result
     }
 

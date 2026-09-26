@@ -21,11 +21,15 @@ import com.mystic.grammio.data.provider.ProviderSettingsRepositoryImpl
 import com.mystic.grammio.data.provider.local.DataStoreProviderPreferencesLocalDataSource
 import com.mystic.grammio.data.provider.local.ProviderPreferencesLocalDataSource
 import com.mystic.grammio.data.transform.TextTransformRepositoryImpl
+import com.mystic.grammio.data.transform.log.HistorySettingsRepositoryImpl
+import com.mystic.grammio.data.transform.log.local.DataStoreTransformationLogPreferencesLocalDataSource
 import com.mystic.grammio.data.transform.log.local.SqlDelightTransformationLogLocalDataSource
 import com.mystic.grammio.data.transform.log.local.TransformationLogLocalDataSource
+import com.mystic.grammio.data.transform.log.local.TransformationLogPreferencesLocalDataSource
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
 import com.mystic.grammio.domain.repository.ApiKeyRepository
+import com.mystic.grammio.domain.repository.HistorySettingsRepository
 import com.mystic.grammio.domain.repository.ModelCatalogRepository
 import com.mystic.grammio.domain.repository.ProviderSettingsRepository
 import com.mystic.grammio.domain.repository.TextTransformRepository
@@ -39,12 +43,13 @@ import org.koin.plugin.module.dsl.single
 
 private val apiKeyStore = named("apiKeyStore")
 private val providerSettingsStore = named("providerSettingsStore")
+private val historySettingsStore = named("historySettingsStore")
 
 val dataModule = module {
     single<HttpClient> { HttpClientFactory.create(enableLogging = BuildConfig.DEBUG) }
     single<Clock> { Clock.System }
 
-    // Two DataStore files, so both are qualified and their consumers use the classic DSL to pick one.
+    // Several DataStore files, so each is qualified and their consumers use the classic DSL to pick one.
 
     // API keys: their own file, so it can be excluded from backups by name.
     single<DataStore<Preferences>>(apiKeyStore) {
@@ -83,6 +88,19 @@ val dataModule = module {
 
     single<PromptBuilder>()
     single<ModelOutputSanitizer>()
+
+    // History (the transformation log): opt-in, with the flag in its own DataStore file.
+    single<DataStore<Preferences>>(historySettingsStore) {
+        PreferenceDataStoreFactory.create {
+            androidContext().preferencesDataStoreFile(
+                DataStoreTransformationLogPreferencesLocalDataSource.DATASTORE_NAME,
+            )
+        }
+    }
+    single {
+        DataStoreTransformationLogPreferencesLocalDataSource(get(historySettingsStore))
+    } bind TransformationLogPreferencesLocalDataSource::class
+    single<HistorySettingsRepositoryImpl>() bind HistorySettingsRepository::class
     single<SqlDelightTransformationLogLocalDataSource>() bind TransformationLogLocalDataSource::class
     single<TextTransformRepositoryImpl>() bind TextTransformRepository::class
 }
