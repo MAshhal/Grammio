@@ -18,7 +18,7 @@ it. Copy the result or replace the selected text in place.
   (OpenRouter, a local server, and so on). Pick the model you want.
 - **Private by default:** no backend and no account. Your API keys are encrypted on the device, and
   text goes straight to the provider you chose.
-- **Optional history:** keep a local log of your transformations. It's off until you turn it on.
+- **Optional history:** keep a local log of your transformations and look back at the latest ones in Settings. It's off until you turn it on.
 
 ## Getting started
 

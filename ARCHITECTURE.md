@@ -76,7 +76,7 @@ refuse a blank one).
 Home ─┬─ Provider            provider, endpoint, API key, model
       ├─ Transformations ─── TransformationEditor(id)   (null id = new)
       ├─ SystemPrompt
-      └─ History             history switch, privacy note
+      └─ History             history switch, privacy note, recent entries
 ```
 
 - Each entry gets its own `ViewModelStore` (`rememberViewModelStoreNavEntryDecorator`), so a page's
@@ -176,9 +176,14 @@ While it is on, `TextTransformRepositoryImpl` records every attempt, successful 
 output or the error, the transformation's id (plus the target language when it used one), provider,
 model and duration.
 
-- Turning history off stops recording; it does not delete what was already saved.
+- Turning history off stops recording; it does not delete what was already saved. Clearing does
+  that (`HistoryRepository.clear`) and leaves the switch as it was.
+- The History page lists the latest `HistorySettingsViewModel.RECENT_LIMIT` (50) entries under the
+  privacy note, read back through `HistoryRepository`. Each is shown with the transformation's
+  current name and icon; one that has since been deleted is labelled as such.
 - Transformations are stored by id; providers and errors by their `storageKey`, never the Kotlin
-  name. A logged id may belong to a transformation that has since been edited or deleted.
+  name. A logged id may belong to a transformation that has since been edited or deleted. An error
+  key this version doesn't know reads back as `TransformError.Unknown`.
 - Recording is best effort: a database failure is logged and never costs the user their result.
 - Input rejected by `TransformTextUseCase` (blank, too long) never reaches the repository, so it
   is not logged.
