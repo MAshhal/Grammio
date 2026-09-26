@@ -16,15 +16,39 @@
 
     <!-- Settings -->
     <string name="settings_how_to_use">Select text in any app, open the selection menu (⋮ or “More”), and tap Grammio to fix, rewrite, summarize or translate it.</string>
-    <string name="settings_api_key_title">Gemini API key</string>
+    <string name="settings_provider_title">AI provider</string>
+    <string name="settings_api_key_title">API key</string>
     <string name="settings_key_saved">Key saved on this device</string>
     <string name="settings_key_missing">No key yet. Grammio needs one to work.</string>
     <string name="settings_enter_key">Paste your API key</string>
     <string name="settings_replace_key">Paste a new key to replace it</string>
-    <string name="settings_get_key">Get a free key at aistudio.google.com</string>
-    <string name="settings_privacy_note">Your key is encrypted with the Android Keystore and never leaves this device except to call Gemini. Selected text is sent to Gemini only when you pick a transformation and is never stored by Grammio.</string>
+    <string name="settings_get_key_gemini">Get a free key at aistudio.google.com</string>
+    <string name="settings_get_key_openai">Get a key at platform.openai.com</string>
+    <string name="settings_get_key_anthropic">Get a key at platform.claude.com</string>
+    <string name="settings_base_url_title">Endpoint</string>
+    <string name="settings_base_url_label">Base URL</string>
+    <string name="settings_base_url_hint">https://openrouter.ai/api/v1</string>
+    <string name="settings_base_url_invalid">Enter an https:// URL, such as https://openrouter.ai/api/v1</string>
+    <string name="settings_model_title">Model</string>
+    <string name="settings_model_default">Provider default (%1$s)</string>
+    <string name="settings_model_none">Pick a model</string>
+    <string name="settings_models_need_setup">Save your key to see the available models.</string>
+    <string name="settings_models_loading">Loading models…</string>
+    <plurals name="settings_models_count">
+        <item quantity="one">%1$d model available</item>
+        <item quantity="other">%1$d models available</item>
+    </plurals>
+    <string name="settings_models_failed">Couldn’t load models. %1$s</string>
+    <string name="settings_privacy_note">Your keys are encrypted with the Android Keystore and never leave this device except to call the provider you chose. Selected text is sent to that provider only when you pick a transformation and is never stored by Grammio.</string>
     <string name="action_save">Save</string>
     <string name="action_remove_key">Remove key</string>
+    <string name="action_refresh">Refresh</string>
+
+    <!-- Providers -->
+    <string name="provider_gemini">Google Gemini</string>
+    <string name="provider_openai">OpenAI</string>
+    <string name="provider_anthropic">Anthropic Claude</string>
+    <string name="provider_openai_compatible">OpenAI-compatible endpoint</string>
 
     <!-- Transformations -->
     <string name="transformation_fix_grammar">Fix grammar</string>
@@ -39,8 +63,8 @@
     <!-- Errors -->
     <string name="error_empty_input">There is no text to transform.</string>
     <string name="error_input_too_long">The selection is too long (max %1$d characters).</string>
-    <string name="error_missing_api_key">Add your Gemini API key in Grammio settings first.</string>
-    <string name="error_invalid_api_key">Gemini rejected your API key. Check it in settings.</string>
+    <string name="error_missing_api_key">Add an API key for your AI provider in Grammio settings first.</string>
+    <string name="error_invalid_api_key">Your AI provider rejected the API key. Check it in settings.</string>
     <string name="error_provider_not_configured">Finish setting up your AI provider in Grammio settings first.</string>
     <string name="error_rate_limited">Rate limit reached. Wait a moment and retry.</string>
     <string name="error_content_blocked">The model declined to process this text.</string>

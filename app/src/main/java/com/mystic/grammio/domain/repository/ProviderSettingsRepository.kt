@@ -9,6 +9,9 @@ interface ProviderSettingsRepository {
 
     suspend fun setActiveProvider(provider: AiProvider)
 
+    /** The model used when the user hasn't picked one, or null when [provider] has none. */
+    fun defaultModel(provider: AiProvider): String?
+
     /** The model the user picked for [provider], or null to use the provider's default. */
     fun selectedModel(provider: AiProvider): Flow<String?>
 

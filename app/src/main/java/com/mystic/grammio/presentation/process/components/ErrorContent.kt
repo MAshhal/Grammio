@@ -10,8 +10,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mystic.grammio.R
 import com.mystic.grammio.domain.error.TransformError
+import com.mystic.grammio.presentation.common.message
 import com.mystic.grammio.presentation.process.model.ErrorRecovery
-import com.mystic.grammio.presentation.process.model.message
 import com.mystic.grammio.presentation.process.model.recovery
 
 /** The error message plus the one recovery action that makes sense for it, if any. */

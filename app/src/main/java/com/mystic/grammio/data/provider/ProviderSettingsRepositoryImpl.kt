@@ -12,6 +12,8 @@ class ProviderSettingsRepositoryImpl(private val localDataSource: ProviderPrefer
 
     override suspend fun setActiveProvider(provider: AiProvider) = localDataSource.setActiveProvider(provider)
 
+    override fun defaultModel(provider: AiProvider): String? = ProviderDefaults.model(provider)
+
     override fun selectedModel(provider: AiProvider): Flow<String?> = localDataSource.selectedModel(provider)
 
     override suspend fun setSelectedModel(
