@@ -45,7 +45,7 @@
     <string name="settings_system_prompt_custom">Your prompt</string>
     <string name="settings_system_prompt_explanation">Sent to the model before every transformation. Grammio adds the transformation’s task and the output language after it. Save it empty to go back to the default.</string>
     <string name="settings_history_page_title">History and privacy</string>
-    <string name="settings_history_page_description">Whether transformations are kept on this device</string>
+    <string name="settings_history_page_description">Recent transformations, and whether they’re kept on this device</string>
     <string name="settings_how_to_use">Select text in any app, open the selection menu (⋮ or “More”), and tap Grammio to fix, rewrite, summarize or translate it.</string>
     <string name="settings_provider_title">AI provider</string>
     <string name="settings_api_key_title">API key</string>
@@ -75,6 +75,13 @@
     <string name="settings_history_title">History</string>
     <string name="settings_history_save">Save history</string>
     <string name="settings_history_description">Keep each transformation on this device: the original text, the result and the model used.</string>
+    <string name="settings_history_recent_title">Recent</string>
+    <string name="settings_history_empty">Nothing saved yet. Transformations you run from now on will appear here.</string>
+    <string name="settings_history_empty_off">Nothing saved. Turn on Save history to keep your transformations here.</string>
+    <string name="settings_history_deleted_transformation">Deleted transformation</string>
+    <string name="settings_history_just_now">Just now</string>
+    <string name="settings_clear_history_title">Clear history?</string>
+    <string name="settings_clear_history_message">Every saved transformation is deleted from this device. This can’t be undone.</string>
     <string name="settings_privacy_note">Your keys are encrypted with the Android Keystore and never leave this device except to call the provider you chose. Selected text is sent to that provider only when you pick a transformation, and Grammio keeps a copy on this device only if you turn on history.</string>
     <string name="action_save">Save</string>
     <string name="action_remove_key">Remove key</string>
@@ -85,6 +92,8 @@
     <string name="action_restore">Restore</string>
     <string name="action_delete">Delete</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_clear_history">Clear history</string>
     <string name="action_more_options">More options</string>
     <string name="action_move_up">Move %1$s up</string>
     <string name="action_move_down">Move %1$s down</string>

@@ -1,3 +1,7 @@
 package com.mystic.grammio.presentation.settings.history
 
-data class HistorySettingsUiState(val isHistoryEnabled: Boolean = false)
+/** @property entries newest first; null until loaded, so the page doesn't flash "nothing saved". */
+data class HistorySettingsUiState(
+    val isHistoryEnabled: Boolean = false,
+    val entries: List<HistoryItem>? = null,
+)
