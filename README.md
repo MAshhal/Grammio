@@ -45,3 +45,7 @@ Run the checks before opening a pull request:
 Kotlin, Jetpack Compose, Koin, Ktor, SQLDelight and DataStore, in a single module laid out with
 Clean Architecture. See [ARCHITECTURE.md](ARCHITECTURE.md) for how the code is organized and how to
 add a provider.
+
+## License
+
+Grammio is released under the [MIT License](LICENSE).
