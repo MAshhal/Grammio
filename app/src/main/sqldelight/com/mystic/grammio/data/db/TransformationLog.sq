@@ -1,0 +1,40 @@
+-- One row per transformation the app attempted, successful or not. Enum-like columns hold the
+-- stable storage keys from data/, never Kotlin names, so renaming a type can't orphan old rows.
+CREATE TABLE transformation_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    -- Epoch milliseconds, when the transformation started.
+    created_at INTEGER NOT NULL,
+    transformation TEXT NOT NULL,
+    -- BCP-47 tag; only set for translations.
+    target_language TEXT,
+    provider TEXT NOT NULL,
+    -- Null when the provider could not be resolved (no key, no model, ...).
+    model_id TEXT,
+    input_text TEXT NOT NULL,
+    -- Exactly one of output_text and error is set.
+    output_text TEXT,
+    error TEXT,
+    duration_ms INTEGER NOT NULL
+);
+
+CREATE INDEX transformation_log_created_at ON transformation_log(created_at);
+
+insert:
+INSERT INTO transformation_log(
+    created_at,
+    transformation,
+    target_language,
+    provider,
+    model_id,
+    input_text,
+    output_text,
+    error,
+    duration_ms
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectRecent:
+SELECT *
+FROM transformation_log
+ORDER BY created_at DESC, id DESC
+LIMIT :limit;
