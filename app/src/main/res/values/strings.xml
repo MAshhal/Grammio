@@ -7,6 +7,9 @@
     <string name="process_no_text">No text was received. Select some text and try again.</string>
     <string name="process_pick_transformation">Pick a transformation above.</string>
     <string name="process_target_language">Into: %1$s</string>
+    <string name="process_selected_text">Selected text</string>
+    <string name="process_show_more">Show full text</string>
+    <string name="process_show_less">Show less</string>
     <string name="action_copy">Copy</string>
     <string name="action_replace">Replace</string>
     <string name="action_close">Close</string>
