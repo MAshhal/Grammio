@@ -6,7 +6,7 @@ top-level package could become its own Gradle module without moving any code bet
 ```
 com.mystic.grammio
 ├── domain/         What the app does. Pure Kotlin: no Android, Ktor or Koin.
-├── data/           How it's done: Gemini over Ktor, the encrypted key store.
+├── data/           How it's done: LLM APIs over Ktor, the encrypted key store, provider settings.
 ├── presentation/   What the user sees: activities, ViewModels, Compose UI.
 └── di/             Koin modules. The only package that sees every layer.
 ```
@@ -30,12 +30,14 @@ below, is broken.
 
 | Package | Holds | Example |
 |---|---|---|
-| `domain/model` | Business types | `Transformation`, `TransformedText` |
+| `domain/model` | Business types | `Transformation`, `AiProvider`, `AiModel` |
 | `domain/error` | The closed set of failures | `TransformError` |
 | `domain/result` | The success-or-typed-failure type | `Outcome` |
-| `domain/repository` | Interfaces the domain needs from the outside world | `TextTransformRepository` |
+| `domain/repository` | Interfaces the domain needs from the outside world | `TextTransformRepository`, `ModelCatalogRepository` |
 | `domain/usecase` | One application rule each | `TransformTextUseCase` |
 | `data/<concept>` | The repository implementation for that concept | `data/transform/TextTransformRepositoryImpl` |
+| `data/provider` | Provider defaults, stored settings, and turning them into a connection | `ProviderDefaults`, `ProviderConnectionResolver` |
+| `data/llm` | The vendor-neutral LLM contract and the provider → data source registry | `LlmDataSource`, `LlmDataSourceRegistry` |
 | `data/<concept>/local`, `data/llm/<vendor>` | Data sources that do I/O | `EncryptedApiKeyLocalDataSource`, `GeminiDataSource` |
 | `data/**/dto` | Wire models | `GenerateContentRequestDto` |
 | `data/**/mapper` | Pure conversions between wire models and app types | `GeminiErrorMapper` |
@@ -51,7 +53,7 @@ below, is broken.
 | `*UseCase` | One application rule | Exposes a single `operator fun invoke`. Only exists when there is a rule to hold (see below). |
 | `*Repository` | Domain interface | Written in domain terms, with no HTTP, prompt or storage concepts. |
 | `*RepositoryImpl` | Its data implementation | Orchestrates data sources, prompts and mappers, and does no I/O itself. |
-| `*DataSource` | One source of data | Performs the I/O. Remote data sources are stateless. |
+| `*DataSource` | One source of data | Performs the I/O. Remote data sources hold no configuration: key, base URL and model arrive with each call. |
 | `*Mapper` | Pure conversion | No logging, no I/O, no state. |
 | `*Dto` | Wire model | `internal`, `@Serializable`, only the fields actually used. |
 | `*UiState` / `*Action` / `*Effect` | Screen state, user intents, one-off events | Immutable data. The ViewModel is the only thing that creates state. |
@@ -63,9 +65,37 @@ would only pass the call through. `SettingsViewModel` observes and clears the ke
 `ApiKeyRepository`, but saves through `SaveApiKeyUseCase` because saving has rules (trim the key,
 refuse a blank one).
 
-**The API key never leaves `data/`.** Only `ApiKeyLocalDataSource` can read it back.
-`TextTransformRepositoryImpl` passes it to the LLM data source per call. The UI can only see
-whether a key exists.
+**API keys never leave `data/`.** Each provider has its own encrypted key, and only
+`ApiKeyLocalDataSource` can read one back. `ProviderConnectionResolver` puts it into the
+`LlmConnection` handed to the LLM data source per call. The UI can only see whether a key exists.
+
+## LLM providers
+
+The user picks a provider in Settings, and `TextTransformRepositoryImpl` sends the text to it:
+
+```
+ProviderConnectionResolver ── active provider, its key, base URL and model ──▶ LlmConnection
+LlmDataSourceRegistry ─────── provider ──▶ GeminiDataSource | OpenAiDataSource | AnthropicDataSource
+```
+
+- One `LlmDataSource` per wire API, in `data/llm/<vendor>/` with its own DTOs and mappers.
+  `OpenAiDataSource` serves both OpenAI and any OpenAI-compatible endpoint; only the base URL differs.
+- Failures common to every HTTP API (status codes, timeouts, offline) map through
+  `data/llm/mapper/HttpErrorMapper`. Vendor mappers handle their own error bodies first.
+- `ProviderDefaults` holds each provider's base URL and default model. The user can override the
+  model with one listed by the provider's API (`ModelCatalogRepository`). A custom endpoint has no
+  defaults, so it reports `TransformError.ProviderNotConfigured` until both are set.
+- Persisted names come from `AiProvider.storageKey`, never from the enum name.
+
+To add a provider:
+
+1. Add an `AiProvider` entry and its `storageKey`.
+2. Give it a base URL and default model in `ProviderDefaults`.
+3. If it speaks a new wire API, add a data source under `data/llm/<vendor>/` with a MockEngine test.
+4. Route it in `LlmDataSourceRegistry` and wire any new data source in `DataModule`.
+5. Give it a label (`AiProviderLabel`) and, if it has one, a key link (`AiProviderKeyLink`).
+
+The exhaustive `when`s in steps 1, 2, 4 and 5 fail to compile until each one is done.
 
 ## Files
 
