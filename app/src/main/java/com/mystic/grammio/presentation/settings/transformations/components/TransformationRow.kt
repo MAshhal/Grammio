@@ -35,9 +35,10 @@ fun TransformationRow(
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
     onEnabledChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(role = Role.Button, onClick = onClick)
             .padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),

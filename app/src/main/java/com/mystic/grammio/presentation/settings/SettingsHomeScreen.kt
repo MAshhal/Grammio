@@ -43,6 +43,7 @@ fun SettingsHomeScreen(onNavigate: (SettingsRoute) -> Unit) {
                     title = stringResource(R.string.settings_provider_page_title),
                     description = stringResource(R.string.settings_provider_page_description),
                     onClick = { onNavigate(SettingsRoute.Provider) },
+                    modifier = Modifier.morphsInto(SettingsRoute.Provider),
                 )
                 RowDivider()
                 SettingsNavigationRow(
@@ -50,6 +51,7 @@ fun SettingsHomeScreen(onNavigate: (SettingsRoute) -> Unit) {
                     title = stringResource(R.string.settings_transformations_page_title),
                     description = stringResource(R.string.settings_transformations_page_description),
                     onClick = { onNavigate(SettingsRoute.Transformations) },
+                    modifier = Modifier.morphsInto(SettingsRoute.Transformations),
                 )
                 RowDivider()
                 SettingsNavigationRow(
@@ -57,6 +59,7 @@ fun SettingsHomeScreen(onNavigate: (SettingsRoute) -> Unit) {
                     title = stringResource(R.string.settings_system_prompt_page_title),
                     description = stringResource(R.string.settings_system_prompt_page_description),
                     onClick = { onNavigate(SettingsRoute.SystemPrompt) },
+                    modifier = Modifier.morphsInto(SettingsRoute.SystemPrompt),
                 )
                 RowDivider()
                 SettingsNavigationRow(
@@ -64,6 +67,7 @@ fun SettingsHomeScreen(onNavigate: (SettingsRoute) -> Unit) {
                     title = stringResource(R.string.settings_history_page_title),
                     description = stringResource(R.string.settings_history_page_description),
                     onClick = { onNavigate(SettingsRoute.History) },
+                    modifier = Modifier.morphsInto(SettingsRoute.History),
                 )
             }
         }
