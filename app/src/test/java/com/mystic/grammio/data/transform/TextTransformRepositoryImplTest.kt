@@ -1,10 +1,7 @@
 package com.mystic.grammio.data.transform
 
 import com.google.common.truth.Truth.assertThat
-import com.mystic.grammio.data.llm.LlmConnection
-import com.mystic.grammio.data.llm.LlmDataSource
 import com.mystic.grammio.data.llm.LlmDataSourceRegistry
-import com.mystic.grammio.data.llm.LlmPrompt
 import com.mystic.grammio.data.provider.ProviderConnectionResolver
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
@@ -15,23 +12,11 @@ import com.mystic.grammio.domain.model.TransformedText
 import com.mystic.grammio.domain.result.Outcome
 import com.mystic.grammio.testing.FakeApiKeyLocalDataSource
 import com.mystic.grammio.testing.FakeProviderPreferencesLocalDataSource
+import com.mystic.grammio.testing.StubLlmDataSource
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class TextTransformRepositoryImplTest {
-
-    private class StubLlmDataSource(var reply: Outcome<String, TransformError>) : LlmDataSource {
-        var lastPrompt: LlmPrompt? = null
-        var lastConnection: LlmConnection? = null
-
-        override suspend fun generate(
-            prompt: LlmPrompt,
-            connection: LlmConnection,
-        ) = reply.also {
-            lastPrompt = prompt
-            lastConnection = connection
-        }
-    }
 
     private val apiKeyDataSource = FakeApiKeyLocalDataSource(
         mapOf(AiProvider.Gemini to "test-key", AiProvider.Anthropic to "ant-key"),

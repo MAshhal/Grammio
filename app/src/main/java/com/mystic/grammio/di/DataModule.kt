@@ -15,6 +15,7 @@ import com.mystic.grammio.data.llm.anthropic.AnthropicDataSource
 import com.mystic.grammio.data.llm.gemini.GeminiDataSource
 import com.mystic.grammio.data.llm.openai.OpenAiDataSource
 import com.mystic.grammio.data.network.HttpClientFactory
+import com.mystic.grammio.data.provider.ModelCatalogRepositoryImpl
 import com.mystic.grammio.data.provider.ProviderConnectionResolver
 import com.mystic.grammio.data.provider.ProviderSettingsRepositoryImpl
 import com.mystic.grammio.data.provider.local.DataStoreProviderPreferencesLocalDataSource
@@ -23,6 +24,7 @@ import com.mystic.grammio.data.transform.TextTransformRepositoryImpl
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
 import com.mystic.grammio.domain.repository.ApiKeyRepository
+import com.mystic.grammio.domain.repository.ModelCatalogRepository
 import com.mystic.grammio.domain.repository.ProviderSettingsRepository
 import com.mystic.grammio.domain.repository.TextTransformRepository
 import io.ktor.client.HttpClient
@@ -73,6 +75,7 @@ val dataModule = module {
         )
     }
     single<ProviderConnectionResolver>()
+    single<ModelCatalogRepositoryImpl>() bind ModelCatalogRepository::class
 
     single<PromptBuilder>()
     single<ModelOutputSanitizer>()

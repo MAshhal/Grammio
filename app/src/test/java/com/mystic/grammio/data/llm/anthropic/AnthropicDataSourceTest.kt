@@ -2,9 +2,11 @@ package com.mystic.grammio.data.llm.anthropic
 
 import com.google.common.truth.Truth.assertThat
 import com.mystic.grammio.data.llm.LlmConnection
+import com.mystic.grammio.data.llm.LlmEndpoint
 import com.mystic.grammio.data.llm.LlmPrompt
 import com.mystic.grammio.data.network.HttpClientFactory
 import com.mystic.grammio.domain.error.TransformError
+import com.mystic.grammio.domain.model.AiModel
 import com.mystic.grammio.domain.result.Outcome
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -120,5 +122,29 @@ class AnthropicDataSourceTest {
         val dataSource = dataSource { throw HttpRequestTimeoutException(it.url.toString(), 30_000) }
 
         assertThat(dataSource.generate()).isEqualTo(Outcome.Failure(TransformError.Timeout))
+    }
+
+    @Test
+    fun `models are listed with display names in API order`() = runTest {
+        val dataSource = dataSource {
+            json(
+                """{"data":[
+                  {"type":"model","id":"claude-opus-5","display_name":"Claude Opus 5","created_at":"2026-01-01T00:00:00Z"},
+                  {"type":"model","id":"claude-haiku-4-5","display_name":"Claude Haiku 4.5","created_at":"2025-10-01T00:00:00Z"}
+                ],"has_more":false,"first_id":"claude-opus-5","last_id":"claude-haiku-4-5"}""",
+            )
+        }
+
+        val result = dataSource.listModels(LlmEndpoint(apiKey = "test-key", baseUrl = "https://claude.test/v1"))
+
+        assertThat(result).isEqualTo(
+            Outcome.Success(
+                listOf(AiModel("claude-opus-5", "Claude Opus 5"), AiModel("claude-haiku-4-5", "Claude Haiku 4.5")),
+            ),
+        )
+        val request = requests.single()
+        assertThat(request.url.encodedPath).isEqualTo("/v1/models")
+        assertThat(request.headers["x-api-key"]).isEqualTo("test-key")
+        assertThat(request.headers["anthropic-version"]).isEqualTo("2023-06-01")
     }
 }

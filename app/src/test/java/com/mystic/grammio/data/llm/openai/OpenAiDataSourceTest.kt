@@ -2,9 +2,11 @@ package com.mystic.grammio.data.llm.openai
 
 import com.google.common.truth.Truth.assertThat
 import com.mystic.grammio.data.llm.LlmConnection
+import com.mystic.grammio.data.llm.LlmEndpoint
 import com.mystic.grammio.data.llm.LlmPrompt
 import com.mystic.grammio.data.network.HttpClientFactory
 import com.mystic.grammio.domain.error.TransformError
+import com.mystic.grammio.domain.model.AiModel
 import com.mystic.grammio.domain.result.Outcome
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -137,5 +139,35 @@ class OpenAiDataSourceTest {
     fun `io errors map to network`() = runTest {
         assertThat(dataSource { throw IOException("no route") }.generate())
             .isEqualTo(Outcome.Failure(TransformError.Network))
+    }
+
+    @Test
+    fun `models are listed sorted, without models that cannot chat`() = runTest {
+        val dataSource = dataSource {
+            json(
+                """{"object":"list","data":[
+                  {"id":"gpt-5.4-nano","object":"model"},{"id":"text-embedding-3-small","object":"model"},
+                  {"id":"gpt-5.4","object":"model"},{"id":"whisper-1","object":"model"},
+                  {"id":"gpt-image-1","object":"model"},{"id":"tts-1","object":"model"}
+                ]}""",
+            )
+        }
+
+        val result = dataSource.listModels(LlmEndpoint(apiKey = "test-key", baseUrl = "https://llm.test/v1"))
+
+        assertThat(result).isEqualTo(
+            Outcome.Success(listOf(AiModel("gpt-5.4", "gpt-5.4"), AiModel("gpt-5.4-nano", "gpt-5.4-nano"))),
+        )
+        val request = requests.single()
+        assertThat(request.url.toString()).isEqualTo("https://llm.test/v1/models")
+        assertThat(request.headers[HttpHeaders.Authorization]).isEqualTo("Bearer test-key")
+    }
+
+    @Test
+    fun `listing with a bad key maps to invalid key`() = runTest {
+        val dataSource = dataSource { respond("unauthorized", HttpStatusCode.Unauthorized) }
+
+        assertThat(dataSource.listModels(LlmEndpoint("bad", "https://llm.test/v1")))
+            .isEqualTo(Outcome.Failure(TransformError.InvalidApiKey))
     }
 }

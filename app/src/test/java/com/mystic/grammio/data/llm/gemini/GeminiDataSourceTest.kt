@@ -2,9 +2,11 @@ package com.mystic.grammio.data.llm.gemini
 
 import com.google.common.truth.Truth.assertThat
 import com.mystic.grammio.data.llm.LlmConnection
+import com.mystic.grammio.data.llm.LlmEndpoint
 import com.mystic.grammio.data.llm.LlmPrompt
 import com.mystic.grammio.data.network.HttpClientFactory
 import com.mystic.grammio.domain.error.TransformError
+import com.mystic.grammio.domain.model.AiModel
 import com.mystic.grammio.domain.result.Outcome
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -131,5 +133,30 @@ class GeminiDataSourceTest {
 
         assertThat(timeout.generate()).isEqualTo(Outcome.Failure(TransformError.Timeout))
         assertThat(offline.generate()).isEqualTo(Outcome.Failure(TransformError.Network))
+    }
+
+    @Test
+    fun `models are listed with their ids and only if they generate content`() = runTest {
+        val dataSource = dataSource {
+            json(
+                """{"models":[
+                  {"name":"models/gemini-3.5-flash-lite","displayName":"Gemini 3.5 Flash-Lite",
+                   "supportedGenerationMethods":["generateContent","countTokens"]},
+                  {"name":"models/text-embedding-004","supportedGenerationMethods":["embedContent"]},
+                  {"name":"models/gemini-x","supportedGenerationMethods":["generateContent"]}
+                ]}""",
+            )
+        }
+
+        val result = dataSource.listModels(LlmEndpoint(apiKey = "test-key", baseUrl = "https://gemini.test/v1beta"))
+
+        assertThat(result).isEqualTo(
+            Outcome.Success(
+                listOf(AiModel("gemini-3.5-flash-lite", "Gemini 3.5 Flash-Lite"), AiModel("gemini-x", "gemini-x")),
+            ),
+        )
+        val request = requests.single()
+        assertThat(request.url.encodedPath).isEqualTo("/v1beta/models")
+        assertThat(request.headers["x-goog-api-key"]).isEqualTo("test-key")
     }
 }
