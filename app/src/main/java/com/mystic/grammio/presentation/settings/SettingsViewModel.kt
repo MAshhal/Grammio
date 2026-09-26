@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mystic.grammio.domain.model.AiProvider
 import com.mystic.grammio.domain.repository.ApiKeyRepository
+import com.mystic.grammio.domain.repository.HistorySettingsRepository
 import com.mystic.grammio.domain.repository.ModelCatalogRepository
 import com.mystic.grammio.domain.repository.ProviderSettingsRepository
 import com.mystic.grammio.domain.result.Outcome
@@ -24,7 +25,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * Settings for the active provider: its key, its endpoint when it is a custom one, and its model.
+ * Settings for the active provider (its key, its endpoint when it is a custom one, and its model),
+ * plus the history opt-in.
  * Saving a key or endpoint goes through use cases because they have rules; the rest has none, so it
  * uses the repositories directly rather than through pass-through use cases.
  */
@@ -33,6 +35,7 @@ class SettingsViewModel(
     private val apiKeyRepository: ApiKeyRepository,
     private val providerSettings: ProviderSettingsRepository,
     private val modelCatalog: ModelCatalogRepository,
+    private val historySettings: HistorySettingsRepository,
     private val saveApiKey: SaveApiKeyUseCase,
     private val saveCustomEndpoint: SaveCustomEndpointUseCase,
 ) : ViewModel() {
@@ -67,7 +70,12 @@ class SettingsViewModel(
     private var modelsSyncedFor: Triple<AiProvider, Boolean, String?>? = null
 
     val state: StateFlow<SettingsUiState> =
-        combine(stored.onEach(::syncModels), inputs, models) { stored, inputs, models ->
+        combine(
+            stored.onEach(::syncModels),
+            inputs,
+            models,
+            historySettings.isHistoryEnabled,
+        ) { stored, inputs, models, isHistoryEnabled ->
             SettingsUiState(
                 provider = stored.provider,
                 hasApiKey = stored.hasApiKey,
@@ -78,6 +86,7 @@ class SettingsViewModel(
                 defaultModelId = providerSettings.defaultModel(stored.provider),
                 selectedModelId = stored.selectedModelId,
                 models = models,
+                isHistoryEnabled = isHistoryEnabled,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsUiState())
 
@@ -109,6 +118,10 @@ class SettingsViewModel(
             }
 
             SettingsAction.RefreshModels -> viewModelScope.launch { loadModels(activeProvider()) }
+
+            is SettingsAction.HistoryToggled -> viewModelScope.launch {
+                historySettings.setHistoryEnabled(action.enabled)
+            }
         }
     }
 

@@ -19,4 +19,6 @@ sealed interface SettingsAction {
     data class ModelSelected(val modelId: String?) : SettingsAction
 
     data object RefreshModels : SettingsAction
+
+    data class HistoryToggled(val enabled: Boolean) : SettingsAction
 }

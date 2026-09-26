@@ -44,7 +44,10 @@
         <item quantity="other">%1$d models available</item>
     </plurals>
     <string name="settings_models_failed">Couldn’t load models. %1$s</string>
-    <string name="settings_privacy_note">Your keys are encrypted with the Android Keystore and never leave this device except to call the provider you chose. Selected text is sent to that provider only when you pick a transformation and is never stored by Grammio.</string>
+    <string name="settings_history_title">History</string>
+    <string name="settings_history_save">Save history</string>
+    <string name="settings_history_description">Keep each transformation on this device: the original text, the result and the model used.</string>
+    <string name="settings_privacy_note">Your keys are encrypted with the Android Keystore and never leave this device except to call the provider you chose. Selected text is sent to that provider only when you pick a transformation, and Grammio keeps a copy on this device only if you turn on history.</string>
     <string name="action_save">Save</string>
     <string name="action_remove_key">Remove key</string>
     <string name="action_refresh">Refresh</string>

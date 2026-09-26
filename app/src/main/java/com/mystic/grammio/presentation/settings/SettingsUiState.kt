@@ -13,6 +13,7 @@ data class SettingsUiState(
     val defaultModelId: String? = null,
     val selectedModelId: String? = null,
     val models: ModelListUiState = ModelListUiState.Idle,
+    val isHistoryEnabled: Boolean = false,
 ) {
     val canSave: Boolean get() = keyInput.isNotBlank()
 

@@ -47,6 +47,7 @@ import com.mystic.grammio.domain.model.AiProvider
 import com.mystic.grammio.presentation.settings.components.ApiKeyField
 import com.mystic.grammio.presentation.settings.components.ApiKeyStatus
 import com.mystic.grammio.presentation.settings.components.CustomEndpointField
+import com.mystic.grammio.presentation.settings.components.HistoryToggle
 import com.mystic.grammio.presentation.settings.components.ModelPicker
 import com.mystic.grammio.presentation.settings.components.ProviderPicker
 import com.mystic.grammio.presentation.settings.components.SettingsSection
@@ -105,6 +106,13 @@ fun SettingsScreen(
                     models = state.models,
                     onSelect = { onAction(SettingsAction.ModelSelected(it)) },
                     onRefresh = { onAction(SettingsAction.RefreshModels) },
+                )
+            }
+
+            SettingsSection(R.string.settings_history_title) {
+                HistoryToggle(
+                    enabled = state.isHistoryEnabled,
+                    onToggle = { onAction(SettingsAction.HistoryToggled(it)) },
                 )
             }
 
@@ -206,7 +214,7 @@ private fun PrivacyNote() {
     }
 }
 
-@Preview(showBackground = true, heightDp = 1100)
+@Preview(showBackground = true, heightDp = 1250)
 @Composable
 private fun SettingsScreenPreview() {
     GrammioTheme {
@@ -222,7 +230,7 @@ private fun SettingsScreenPreview() {
     }
 }
 
-@Preview(showBackground = true, heightDp = 1200)
+@Preview(showBackground = true, heightDp = 1350)
 @Composable
 private fun CustomEndpointPreview() {
     GrammioTheme {

@@ -9,6 +9,7 @@ import com.mystic.grammio.domain.usecase.SaveApiKeyUseCase
 import com.mystic.grammio.domain.usecase.SaveCustomEndpointUseCase
 import com.mystic.grammio.testing.FakeModelCatalogRepository
 import com.mystic.grammio.testing.InMemoryApiKeyRepository
+import com.mystic.grammio.testing.InMemoryHistorySettingsRepository
 import com.mystic.grammio.testing.InMemoryProviderSettingsRepository
 import com.mystic.grammio.testing.MainDispatcherRule
 import kotlinx.coroutines.launch
@@ -26,6 +27,7 @@ class SettingsViewModelTest {
     private val apiKeys = InMemoryApiKeyRepository()
     private val providerSettings = InMemoryProviderSettingsRepository()
     private val modelCatalog = FakeModelCatalogRepository()
+    private val historySettings = InMemoryHistorySettingsRepository()
 
     // Lazy: must be created after MainDispatcherRule has installed the test Main dispatcher.
     private val viewModel by lazy {
@@ -33,6 +35,7 @@ class SettingsViewModelTest {
             apiKeyRepository = apiKeys,
             providerSettings = providerSettings,
             modelCatalog = modelCatalog,
+            historySettings = historySettings,
             saveApiKey = SaveApiKeyUseCase(apiKeys),
             saveCustomEndpoint = SaveCustomEndpointUseCase(providerSettings),
         )
@@ -158,5 +161,18 @@ class SettingsViewModelTest {
         viewModel.onAction(SettingsAction.ModelSelected(null))
         advanceUntilIdle()
         assertThat(viewModel.state.value.selectedModelId).isNull()
+    }
+
+    @Test
+    fun `history is off until the user turns it on`() = runTest {
+        collectState()
+        advanceUntilIdle()
+        assertThat(viewModel.state.value.isHistoryEnabled).isFalse()
+
+        viewModel.onAction(SettingsAction.HistoryToggled(true))
+        advanceUntilIdle()
+
+        assertThat(historySettings.isHistoryEnabled.value).isTrue()
+        assertThat(viewModel.state.value.isHistoryEnabled).isTrue()
     }
 }
