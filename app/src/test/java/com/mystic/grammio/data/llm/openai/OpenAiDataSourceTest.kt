@@ -82,6 +82,11 @@ class OpenAiDataSourceTest {
         assertThat(dataSource.generate()).isEqualTo(Outcome.Success("ok"))
         assertThat(requests).hasSize(2)
         assertThat(requests[1].body.toByteArray().decodeToString()).doesNotContain("temperature")
+
+        // Remembered for this model, so the next call skips the doomed first attempt.
+        assertThat(dataSource.generate()).isEqualTo(Outcome.Success("ok"))
+        assertThat(requests).hasSize(3)
+        assertThat(requests[2].body.toByteArray().decodeToString()).doesNotContain("temperature")
     }
 
     @Test

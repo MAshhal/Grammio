@@ -7,7 +7,8 @@ enum class ErrorRecovery { Retry, OpenSettings, None }
 
 val TransformError.recovery: ErrorRecovery
     get() = when (this) {
-        TransformError.MissingApiKey, TransformError.InvalidApiKey -> ErrorRecovery.OpenSettings
+        TransformError.MissingApiKey, TransformError.InvalidApiKey, TransformError.ProviderNotConfigured,
+        -> ErrorRecovery.OpenSettings
 
         TransformError.EmptyInput, is TransformError.InputTooLong, TransformError.ContentBlocked -> ErrorRecovery.None
 

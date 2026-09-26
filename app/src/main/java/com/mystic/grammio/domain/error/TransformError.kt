@@ -9,6 +9,9 @@ sealed interface TransformError {
     data class InputTooLong(val maxChars: Int) : TransformError
     data object MissingApiKey : TransformError
     data object InvalidApiKey : TransformError
+
+    /** The active provider still needs a base URL or a model before it can be called. */
+    data object ProviderNotConfigured : TransformError
     data object RateLimited : TransformError
     data object ContentBlocked : TransformError
     data object Network : TransformError

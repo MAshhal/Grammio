@@ -13,3 +13,6 @@ val AiProvider.storageKey: String
         AiProvider.Anthropic -> "anthropic"
         AiProvider.OpenAiCompatible -> "openai_compatible"
     }
+
+/** The provider stored under [key], or null for a key this version doesn't know. */
+fun aiProviderForStorageKey(key: String): AiProvider? = AiProvider.entries.firstOrNull { it.storageKey == key }

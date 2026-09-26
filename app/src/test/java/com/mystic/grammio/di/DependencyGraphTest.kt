@@ -3,6 +3,7 @@ package com.mystic.grammio.di
 import android.content.Context
 import com.google.common.truth.Truth.assertThat
 import com.mystic.grammio.domain.repository.ApiKeyRepository
+import com.mystic.grammio.domain.repository.ProviderSettingsRepository
 import com.mystic.grammio.domain.repository.TextTransformRepository
 import com.mystic.grammio.domain.usecase.TransformTextUseCase
 import com.mystic.grammio.presentation.process.ProcessTextInput
@@ -31,6 +32,7 @@ class DependencyGraphTest {
 
         assertThat(koin.get<TextTransformRepository>()).isNotNull()
         assertThat(koin.get<ApiKeyRepository>()).isNotNull()
+        assertThat(koin.get<ProviderSettingsRepository>()).isNotNull()
         assertThat(koin.get<TransformTextUseCase>()).isNotNull()
         assertThat(koin.get<SettingsViewModel>()).isNotNull()
         assertThat(

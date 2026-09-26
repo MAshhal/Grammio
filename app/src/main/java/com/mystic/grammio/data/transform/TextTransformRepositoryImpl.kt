@@ -1,23 +1,20 @@
 package com.mystic.grammio.data.transform
 
-import com.mystic.grammio.data.apikey.local.ApiKeyLocalDataSource
-import com.mystic.grammio.data.llm.LlmConnection
-import com.mystic.grammio.data.llm.LlmDataSource
-import com.mystic.grammio.data.llm.gemini.GeminiDataSource
+import com.mystic.grammio.data.llm.LlmDataSourceRegistry
+import com.mystic.grammio.data.provider.ProviderConnectionResolver
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
 import com.mystic.grammio.domain.error.TransformError
-import com.mystic.grammio.domain.model.AiProvider
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.model.TransformedText
 import com.mystic.grammio.domain.repository.TextTransformRepository
 import com.mystic.grammio.domain.result.Outcome
 
-/** Orchestrates a transformation: API key → prompt → LLM → cleaned-up text. */
+/** Orchestrates a transformation: active provider → connection → prompt → LLM → cleaned-up text. */
 class TextTransformRepositoryImpl(
-    private val apiKeyDataSource: ApiKeyLocalDataSource,
+    private val connectionResolver: ProviderConnectionResolver,
     private val promptBuilder: PromptBuilder,
-    private val llmDataSource: LlmDataSource,
+    private val llmDataSources: LlmDataSourceRegistry,
     private val sanitizer: ModelOutputSanitizer,
 ) : TextTransformRepository {
 
@@ -25,11 +22,14 @@ class TextTransformRepositoryImpl(
         text: String,
         transformation: Transformation,
     ): Outcome<TransformedText, TransformError> {
-        val apiKey = apiKeyDataSource.read(AiProvider.Gemini) ?: return Outcome.Failure(TransformError.MissingApiKey)
+        val provider = connectionResolver.activeProvider()
+        val connection = when (val resolved = connectionResolver.resolve(provider)) {
+            is Outcome.Failure -> return resolved
+            is Outcome.Success -> resolved.value
+        }
         val prompt = promptBuilder.build(text, transformation)
-        val connection = LlmConnection(apiKey, GeminiDataSource.MODEL, GeminiDataSource.BASE_URL)
 
-        return when (val outcome = llmDataSource.generate(prompt, connection)) {
+        return when (val outcome = llmDataSources.forProvider(provider).generate(prompt, connection)) {
             is Outcome.Failure -> outcome
 
             is Outcome.Success -> {

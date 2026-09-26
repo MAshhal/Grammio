@@ -67,11 +67,8 @@ class GeminiDataSource(private val httpClient: HttpClient) : LlmDataSource {
         return Outcome.Failure(HttpErrorMapper.fromException(e))
     }
 
-    companion object {
-        /** Fast, low-cost model; thinking is minimal by default, which suits short rewrites. */
-        const val MODEL = "gemini-3.5-flash-lite"
-        const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
-        private const val API_KEY_HEADER = "x-goog-api-key"
-        private const val MAX_OUTPUT_TOKENS = 8_192
+    private companion object {
+        const val API_KEY_HEADER = "x-goog-api-key"
+        const val MAX_OUTPUT_TOKENS = 8_192
     }
 }

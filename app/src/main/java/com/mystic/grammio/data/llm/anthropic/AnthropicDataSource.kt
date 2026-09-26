@@ -20,6 +20,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
@@ -30,11 +31,17 @@ class AnthropicDataSource(private val httpClient: HttpClient) : LlmDataSource {
 
     private val log = Logger.withTag("Anthropic")
 
+    /**
+     * Models (per base URL) that refused a temperature this session. The one piece of state kept
+     * here: a cache of server behaviour, not configuration, so each such model costs one retry, not one per call.
+     */
+    private val temperatureRejectedBy: MutableSet<String> = ConcurrentHashMap.newKeySet()
+
     override suspend fun generate(
         prompt: LlmPrompt,
         connection: LlmConnection,
     ): Outcome<String, TransformError> = try {
-        send(prompt, connection, includeTemperature = true)
+        send(prompt, connection, includeTemperature = connection.temperatureKey !in temperatureRejectedBy)
     } catch (e: HttpRequestTimeoutException) {
         // Caught before CancellationException, which some Ktor versions use as its supertype.
         exceptionFailure(e)
@@ -60,12 +67,15 @@ class AnthropicDataSource(private val httpClient: HttpClient) : LlmDataSource {
         val error = runCatching { response.body<AnthropicErrorResponseDto>().error }.getOrNull()
         if (includeTemperature && AnthropicErrorMapper.rejectsTemperature(response.status, error)) {
             log.i { "Model rejected temperature; retrying without it" }
+            temperatureRejectedBy += connection.temperatureKey
             return send(prompt, connection, includeTemperature = false)
         }
         // Only the status and error type are logged; the message can echo user text.
         log.w { "messages failed: HTTP ${response.status.value} ${error?.type.orEmpty()}" }
         return Outcome.Failure(AnthropicErrorMapper.fromHttpError(response.status, error))
     }
+
+    private val LlmConnection.temperatureKey get() = "$baseUrl|$modelId"
 
     private fun exceptionFailure(e: Exception): Outcome.Failure<TransformError> {
         log.w { "messages failed: ${e::class.simpleName}" }

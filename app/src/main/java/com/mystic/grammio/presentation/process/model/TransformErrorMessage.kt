@@ -12,6 +12,7 @@ fun TransformError.message(): String = when (this) {
     is TransformError.InputTooLong -> stringResource(R.string.error_input_too_long, maxChars)
     TransformError.MissingApiKey -> stringResource(R.string.error_missing_api_key)
     TransformError.InvalidApiKey -> stringResource(R.string.error_invalid_api_key)
+    TransformError.ProviderNotConfigured -> stringResource(R.string.error_provider_not_configured)
     TransformError.RateLimited -> stringResource(R.string.error_rate_limited)
     TransformError.ContentBlocked -> stringResource(R.string.error_content_blocked)
     TransformError.Network -> stringResource(R.string.error_network)

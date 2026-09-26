@@ -41,6 +41,7 @@
     <string name="error_input_too_long">The selection is too long (max %1$d characters).</string>
     <string name="error_missing_api_key">Add your Gemini API key in Grammio settings first.</string>
     <string name="error_invalid_api_key">Gemini rejected your API key. Check it in settings.</string>
+    <string name="error_provider_not_configured">Finish setting up your AI provider in Grammio settings first.</string>
     <string name="error_rate_limited">Rate limit reached. Wait a moment and retry.</string>
     <string name="error_content_blocked">The model declined to process this text.</string>
     <string name="error_network">No connection. Check your network and retry.</string>
