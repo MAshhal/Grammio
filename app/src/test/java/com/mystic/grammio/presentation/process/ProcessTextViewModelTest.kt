@@ -171,4 +171,16 @@ class ProcessTextViewModelTest {
             assertThat(awaitItem()).isEqualTo(ProcessTextEffect.Close)
         }
     }
+
+    @Test
+    fun `settings open on the page that fixes the problem`() = runTest {
+        val vm = viewModel()
+
+        vm.effects.test {
+            vm.onAction(ProcessTextAction.OpenSettings)
+            assertThat(awaitItem()).isEqualTo(ProcessTextEffect.OpenSettings)
+            vm.onAction(ProcessTextAction.ManageTransformations)
+            assertThat(awaitItem()).isEqualTo(ProcessTextEffect.OpenTransformationSettings)
+        }
+    }
 }

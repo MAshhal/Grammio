@@ -4,18 +4,24 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -80,7 +86,7 @@ fun ProcessTextContent(
             } else {
                 OriginalTextPreview(state.originalText)
                 if (state.hasNoTransformations) {
-                    NoTransformationsMessage()
+                    NoTransformationsMessage(onManage = { onAction(ProcessTextAction.ManageTransformations) })
                 } else {
                     TransformationChips(
                         transformations = state.transformations.orEmpty(),
@@ -126,12 +132,19 @@ private fun NoInputMessage() {
 }
 
 @Composable
-private fun NoTransformationsMessage() {
-    Text(
-        stringResource(R.string.process_no_transformations),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
+private fun NoTransformationsMessage(onManage: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            stringResource(R.string.process_no_transformations),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        TextButton(onClick = onManage, contentPadding = ButtonDefaults.TextButtonWithIconContentPadding) {
+            Icon(Icons.Outlined.Settings, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+            Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+            Text(stringResource(R.string.action_manage_transformations))
+        }
+    }
 }
 
 @Preview(showBackground = true)

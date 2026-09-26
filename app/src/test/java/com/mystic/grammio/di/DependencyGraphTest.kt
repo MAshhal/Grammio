@@ -17,6 +17,8 @@ import com.mystic.grammio.presentation.process.ProcessTextViewModel
 import com.mystic.grammio.presentation.settings.history.HistorySettingsViewModel
 import com.mystic.grammio.presentation.settings.prompt.SystemPromptViewModel
 import com.mystic.grammio.presentation.settings.provider.ProviderSettingsViewModel
+import com.mystic.grammio.presentation.settings.transformations.TransformationsViewModel
+import com.mystic.grammio.presentation.settings.transformations.editor.TransformationEditorViewModel
 import com.mystic.grammio.testing.MainDispatcherRule
 import io.mockk.mockk
 import org.junit.After
@@ -56,6 +58,9 @@ class DependencyGraphTest {
         assertThat(koin.get<ProviderSettingsViewModel>()).isNotNull()
         assertThat(koin.get<HistorySettingsViewModel>()).isNotNull()
         assertThat(koin.get<SystemPromptViewModel>()).isNotNull()
+        assertThat(koin.get<TransformationsViewModel>()).isNotNull()
+        assertThat(koin.get<TransformationEditorViewModel> { parametersOf(null) }.state.value.isNew).isTrue()
+        assertThat(koin.get<TransformationEditorViewModel> { parametersOf("fix_grammar") }.state.value.isNew).isFalse()
         assertThat(
             koin.get<ProcessTextViewModel> {
                 parametersOf(ProcessTextInput("hi", canReplace = true))

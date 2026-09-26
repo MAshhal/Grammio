@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.SmartToy
@@ -42,6 +43,13 @@ fun SettingsHomeScreen(onNavigate: (SettingsRoute) -> Unit) {
                     title = stringResource(R.string.settings_provider_page_title),
                     description = stringResource(R.string.settings_provider_page_description),
                     onClick = { onNavigate(SettingsRoute.Provider) },
+                )
+                RowDivider()
+                SettingsNavigationRow(
+                    icon = Icons.Outlined.AutoAwesome,
+                    title = stringResource(R.string.settings_transformations_page_title),
+                    description = stringResource(R.string.settings_transformations_page_description),
+                    onClick = { onNavigate(SettingsRoute.Transformations) },
                 )
                 RowDivider()
                 SettingsNavigationRow(

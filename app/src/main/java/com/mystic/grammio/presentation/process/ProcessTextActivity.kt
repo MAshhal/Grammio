@@ -56,6 +56,11 @@ class ProcessTextActivity : ComponentActivity() {
                 startActivity(SettingsActivity.providerIntent(this).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 finish()
             }
+
+            ProcessTextEffect.OpenTransformationSettings -> {
+                startActivity(SettingsActivity.transformationsIntent(this).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                finish()
+            }
         }
     }
 }

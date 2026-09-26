@@ -13,6 +13,13 @@ sealed interface SettingsRoute : NavKey {
     data object Provider : SettingsRoute
 
     @Serializable
+    data object Transformations : SettingsRoute
+
+    /** A null [id] creates a new transformation. */
+    @Serializable
+    data class TransformationEditor(val id: String?) : SettingsRoute
+
+    @Serializable
     data object SystemPrompt : SettingsRoute
 
     @Serializable

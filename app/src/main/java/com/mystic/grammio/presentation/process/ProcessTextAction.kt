@@ -16,4 +16,6 @@ sealed interface ProcessTextAction {
     data object Dismiss : ProcessTextAction
 
     data object OpenSettings : ProcessTextAction
+
+    data object ManageTransformations : ProcessTextAction
 }

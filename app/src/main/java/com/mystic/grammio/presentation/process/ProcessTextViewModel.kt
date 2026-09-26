@@ -66,6 +66,8 @@ class ProcessTextViewModel(
             ProcessTextAction.Dismiss -> emit(ProcessTextEffect.Close)
 
             ProcessTextAction.OpenSettings -> emit(ProcessTextEffect.OpenSettings)
+
+            ProcessTextAction.ManageTransformations -> emit(ProcessTextEffect.OpenTransformationSettings)
         }
     }
 

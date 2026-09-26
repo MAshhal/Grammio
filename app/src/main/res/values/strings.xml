@@ -17,11 +17,28 @@
     <string name="action_retry">Retry</string>
     <string name="action_open_settings">Open settings</string>
     <string name="action_back">Back</string>
+    <string name="action_manage_transformations">Manage transformations</string>
     <string name="copied_to_clipboard">Copied</string>
 
     <!-- Settings -->
     <string name="settings_provider_page_title">Provider and model</string>
     <string name="settings_provider_page_description">AI provider, API key and model</string>
+    <string name="settings_transformations_page_title">Transformations</string>
+    <string name="settings_transformations_page_description">Edit, add, reorder or turn off what Grammio offers</string>
+    <string name="settings_transformations_hint">The ones turned on appear in the sheet, in this order. Tap one to edit it.</string>
+    <string name="settings_transformations_empty">No transformations yet. Add your own, or restore the built-in ones from the menu.</string>
+    <string name="settings_restore_defaults_title">Restore the built-in transformations?</string>
+    <string name="settings_restore_defaults_message">Fix grammar, Professional, Summarize, Rephrase and Translate go back to how they shipped and are turned on. Transformations you added stay as they are.</string>
+    <string name="settings_transformation_new_title">New transformation</string>
+    <string name="settings_transformation_edit_title">Edit transformation</string>
+    <string name="settings_transformation_name">Name</string>
+    <string name="settings_transformation_task">Task</string>
+    <string name="settings_transformation_task_explanation">What the model should do with the selected text, sent after the system prompt. Write %1$s where a language name belongs, and the sheet will let you pick the target language.</string>
+    <string name="settings_transformation_task_placeholder">Rewrite the text as a friendly tweet.</string>
+    <string name="settings_transformation_uses_language">Uses the target language picked in the sheet</string>
+    <string name="settings_transformation_icon">Icon</string>
+    <string name="settings_delete_transformation_title">Delete “%1$s”?</string>
+    <string name="settings_delete_transformation_message">Built-in transformations can be brought back with Restore defaults. Ones you added are gone for good.</string>
     <string name="settings_system_prompt_page_title">System prompt</string>
     <string name="settings_system_prompt_page_description">The instructions sent with every transformation</string>
     <string name="settings_system_prompt_default">Default prompt</string>
@@ -63,6 +80,28 @@
     <string name="action_remove_key">Remove key</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_reset_to_default">Reset to default</string>
+    <string name="action_add_transformation">Add</string>
+    <string name="action_restore_defaults">Restore defaults</string>
+    <string name="action_restore">Restore</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_more_options">More options</string>
+    <string name="action_move_up">Move %1$s up</string>
+    <string name="action_move_down">Move %1$s down</string>
+
+    <!-- Transformation icons, as read by screen readers in the icon picker -->
+    <string name="icon_sparkle">Sparkle</string>
+    <string name="icon_spellcheck">Spell check</string>
+    <string name="icon_autorenew">Rewrite</string>
+    <string name="icon_briefcase">Briefcase</string>
+    <string name="icon_smile">Smile</string>
+    <string name="icon_short_text">Short text</string>
+    <string name="icon_notes">Notes</string>
+    <string name="icon_summarize">Summary</string>
+    <string name="icon_translate">Translate</string>
+    <string name="icon_edit">Pencil</string>
+    <string name="icon_mail">Mail</string>
+    <string name="icon_lightbulb">Light bulb</string>
 
     <!-- Providers -->
     <string name="provider_gemini">Google Gemini</string>

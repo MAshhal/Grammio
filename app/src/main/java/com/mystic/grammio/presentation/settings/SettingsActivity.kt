@@ -13,10 +13,10 @@ class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val initialBackStack = if (intent.getBooleanExtra(EXTRA_OPEN_PROVIDER, false)) {
-            listOf(SettingsRoute.Home, SettingsRoute.Provider)
-        } else {
-            listOf(SettingsRoute.Home)
+        val initialBackStack = when (intent.getStringExtra(EXTRA_START_PAGE)) {
+            PAGE_PROVIDER -> listOf(SettingsRoute.Home, SettingsRoute.Provider)
+            PAGE_TRANSFORMATIONS -> listOf(SettingsRoute.Home, SettingsRoute.Transformations)
+            else -> listOf(SettingsRoute.Home)
         }
         setContent {
             GrammioTheme {
@@ -26,10 +26,19 @@ class SettingsActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val EXTRA_OPEN_PROVIDER = "com.mystic.grammio.extra.OPEN_PROVIDER"
+        private const val EXTRA_START_PAGE = "com.mystic.grammio.extra.START_PAGE"
+        private const val PAGE_PROVIDER = "provider"
+        private const val PAGE_TRANSFORMATIONS = "transformations"
 
         /** Opens Settings on the provider page, with Home underneath so back still leads there. */
-        fun providerIntent(context: Context): Intent =
-            Intent(context, SettingsActivity::class.java).putExtra(EXTRA_OPEN_PROVIDER, true)
+        fun providerIntent(context: Context): Intent = startPageIntent(context, PAGE_PROVIDER)
+
+        /** Opens Settings on the transformations page, with Home underneath. */
+        fun transformationsIntent(context: Context): Intent = startPageIntent(context, PAGE_TRANSFORMATIONS)
+
+        private fun startPageIntent(
+            context: Context,
+            page: String,
+        ): Intent = Intent(context, SettingsActivity::class.java).putExtra(EXTRA_START_PAGE, page)
     }
 }

@@ -8,5 +8,8 @@ sealed interface ProcessTextEffect {
 
     data object Close : ProcessTextEffect
 
+    /** Settings on the provider page, for errors about the key or endpoint. */
     data object OpenSettings : ProcessTextEffect
+
+    data object OpenTransformationSettings : ProcessTextEffect
 }
