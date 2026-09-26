@@ -97,6 +97,18 @@ To add a provider:
 
 The exhaustive `when`s in steps 1, 2, 4 and 5 fail to compile until each one is done.
 
+## Transformation log
+
+`TextTransformRepositoryImpl` records every attempt, successful or not, through
+`TransformationLogLocalDataSource` into the `transformation_log` table of `grammio.db`
+(SQLDelight, schema in `src/main/sqldelight`). Each row holds the input text, the cleaned-up
+output or the error, the transformation (plus target language), provider, model and duration.
+
+- Transformations, providers and errors are stored by their `storageKey`, never the Kotlin name.
+- Recording is best effort: a database failure is logged and never costs the user their result.
+- Input rejected by `TransformTextUseCase` (blank, too long) never reaches the repository, so it
+  is not logged.
+
 ## Files
 
 - One public top-level type per file, named after the file. Extension functions live in a file
