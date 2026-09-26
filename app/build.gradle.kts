@@ -32,6 +32,16 @@ android {
                 enable = true
             }
         }
+        // Release, signed with the debug key so it installs from Android Studio. Judge performance
+        // with this: debug builds run Compose unoptimized and stutter until the JIT warms up.
+        create("localRelease") {
+            initWith(getByName("release"))
+            optimization {
+                enable = true
+            }
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += "release"
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
