@@ -85,9 +85,13 @@ Home ─┬─ Provider            provider, endpoint, API key, model
   ViewModel that needs to leave its page emits an effect (the editor's `Close`).
 - `SettingsActivity.providerIntent` and `transformationsIntent` open Settings on a page with Home
   underneath. The process sheet uses them to send the user to the page that fixes the problem.
+- A page grows out of the row that opens it and shrinks back into it (a container transform,
+  `PageMorph.kt`). The page is a `pageEntry<>`, and whatever opens it is marked with
+  `Modifier.morphsInto(route)`; the route is the key that pairs the two.
 
-To add a page: add a `SettingsRoute`, an `entry<>` in `SettingsNavigation`, a row on
-`SettingsHomeScreen`, and register its ViewModel in `PresentationModule`.
+To add a page: add a `SettingsRoute`, a `pageEntry<>` in `SettingsNavigation`, a row on
+`SettingsHomeScreen` marked `morphsInto` the route, and register its ViewModel in
+`PresentationModule`.
 
 **API keys never leave `data/`.** Each provider has its own encrypted key, and only
 `ApiKeyLocalDataSource` can read one back. `ProviderConnectionResolver` puts it into the
