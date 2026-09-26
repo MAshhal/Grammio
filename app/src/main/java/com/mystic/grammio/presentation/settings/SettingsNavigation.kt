@@ -1,8 +1,12 @@
 package com.mystic.grammio.presentation.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
@@ -35,10 +39,17 @@ fun SettingsNavigation(initialBackStack: List<SettingsRoute>) {
     NavDisplay(
         backStack = backStack,
         onBack = goBack,
+        // Opaque, so nothing behind the pages (the window) shows while they move or shrink.
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surfaceContainer),
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
         ),
+        transitionSpec = SettingsTransitions.push,
+        popTransitionSpec = SettingsTransitions.pop,
+        predictivePopTransitionSpec = SettingsTransitions.predictivePop,
         entryProvider = entryProvider {
             entry<SettingsRoute.Home> {
                 SettingsHomeScreen(onNavigate = { backStack.add(it) })
