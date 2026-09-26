@@ -1,0 +1,48 @@
+-- The transformations the user can pick from, in the order they arranged them. The built-in ones
+-- are seeded from Kotlin (DefaultTransformations), so "restore defaults" has a single source.
+CREATE TABLE transformation (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    task_prompt TEXT NOT NULL,
+    -- Storage key of the icon.
+    icon TEXT NOT NULL,
+    -- 1 when offered in the sheet, 0 when hidden.
+    is_enabled INTEGER NOT NULL,
+    temperature REAL NOT NULL,
+    -- Sort order; gaps are allowed.
+    position INTEGER NOT NULL
+);
+
+selectAll:
+SELECT *
+FROM transformation
+ORDER BY position, id;
+
+selectById:
+SELECT *
+FROM transformation
+WHERE id = ?;
+
+insert:
+INSERT INTO transformation(id, name, task_prompt, icon, is_enabled, temperature, position)
+VALUES (?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(position) + 1, 0) FROM transformation));
+
+-- Leaves the position alone: editing a transformation doesn't move it.
+update:
+UPDATE transformation
+SET name = :name, task_prompt = :task_prompt, icon = :icon, is_enabled = :is_enabled, temperature = :temperature
+WHERE id = :id;
+
+setEnabled:
+UPDATE transformation
+SET is_enabled = ?
+WHERE id = ?;
+
+setPosition:
+UPDATE transformation
+SET position = ?
+WHERE id = ?;
+
+delete:
+DELETE FROM transformation
+WHERE id = ?;

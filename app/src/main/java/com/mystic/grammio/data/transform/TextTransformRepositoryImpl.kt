@@ -40,6 +40,7 @@ class TextTransformRepositoryImpl(
     override suspend fun transform(
         text: String,
         transformation: Transformation,
+        targetLanguageTag: String,
     ): Outcome<TransformedText, TransformError> {
         val startedAt = clock.now()
         val started = TimeSource.Monotonic.markNow()
@@ -47,7 +48,7 @@ class TextTransformRepositoryImpl(
         val connection = connectionResolver.resolve(provider)
         val result = when (connection) {
             is Outcome.Failure -> connection
-            is Outcome.Success -> generate(text, transformation, provider, connection.value)
+            is Outcome.Success -> generate(text, transformation, targetLanguageTag, provider, connection.value)
         }
 
         if (logPreferences.isEnabled.first()) {
@@ -55,6 +56,7 @@ class TextTransformRepositoryImpl(
                 TransformationLogEntry(
                     startedAt = startedAt,
                     transformation = transformation,
+                    targetLanguageTag = targetLanguageTag.takeIf { transformation.usesTargetLanguage },
                     provider = provider,
                     modelId = (connection as? Outcome.Success)?.value?.modelId,
                     inputText = text,
@@ -69,10 +71,11 @@ class TextTransformRepositoryImpl(
     private suspend fun generate(
         text: String,
         transformation: Transformation,
+        targetLanguageTag: String,
         provider: AiProvider,
         connection: LlmConnection,
     ): Outcome<TransformedText, TransformError> {
-        val prompt = promptBuilder.build(text, transformation, promptSettings.systemPrompt.first())
+        val prompt = promptBuilder.build(text, transformation, targetLanguageTag, promptSettings.systemPrompt.first())
 
         return when (val outcome = llmDataSources.forProvider(provider).generate(prompt, connection)) {
             is Outcome.Failure -> outcome

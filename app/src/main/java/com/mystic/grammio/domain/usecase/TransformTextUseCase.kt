@@ -14,12 +14,13 @@ class TransformTextUseCase(private val repository: TextTransformRepository) {
     suspend operator fun invoke(
         text: String,
         transformation: Transformation,
+        targetLanguageTag: String,
     ): Outcome<TransformedText, TransformError> {
         val input = text.trim()
         return when {
             input.isEmpty() -> Outcome.Failure(TransformError.EmptyInput)
             input.length > MAX_INPUT_CHARS -> Outcome.Failure(TransformError.InputTooLong(MAX_INPUT_CHARS))
-            else -> repository.transform(input, transformation)
+            else -> repository.transform(input, transformation, targetLanguageTag)
         }
     }
 

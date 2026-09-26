@@ -25,13 +25,13 @@ import androidx.compose.ui.unit.dp
 import com.mystic.grammio.R
 import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.Transformation
+import com.mystic.grammio.domain.model.TransformationIcon
 import com.mystic.grammio.presentation.process.components.LanguagePicker
 import com.mystic.grammio.presentation.process.components.OriginalTextPreview
 import com.mystic.grammio.presentation.process.components.ProcessTextActionBar
 import com.mystic.grammio.presentation.process.components.ProcessTextHeader
 import com.mystic.grammio.presentation.process.components.ResultCard
 import com.mystic.grammio.presentation.process.components.TransformationChips
-import com.mystic.grammio.presentation.process.model.TransformationOptions
 import com.mystic.grammio.presentation.theme.GrammioTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,12 +79,16 @@ fun ProcessTextContent(
                 NoInputMessage()
             } else {
                 OriginalTextPreview(state.originalText)
-                TransformationChips(
-                    transformations = state.transformations,
-                    selected = state.selected,
-                    onSelect = { onAction(ProcessTextAction.Select(it)) },
-                )
-                AnimatedVisibility(visible = state.selected is Transformation.Translate) {
+                if (state.hasNoTransformations) {
+                    NoTransformationsMessage()
+                } else {
+                    TransformationChips(
+                        transformations = state.transformations.orEmpty(),
+                        selected = state.selected,
+                        onSelect = { onAction(ProcessTextAction.Select(it)) },
+                    )
+                }
+                AnimatedVisibility(visible = state.showsLanguagePicker) {
                     LanguagePicker(
                         selectedTag = state.targetLanguageTag,
                         onSelect = { onAction(ProcessTextAction.ChangeTargetLanguage(it)) },
@@ -121,6 +125,15 @@ private fun NoInputMessage() {
     }
 }
 
+@Composable
+private fun NoTransformationsMessage() {
+    Text(
+        stringResource(R.string.process_no_transformations),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun ProcessTextContentPreview() {
@@ -155,7 +168,13 @@ private fun previewState(result: ResultUiState) = ProcessTextUiState(
     originalText = "helo wrld, how r u doing today",
     canReplace = true,
     targetLanguageTag = "en",
-    transformations = TransformationOptions.all("en"),
-    selected = Transformation.FixGrammar,
+    transformations = previewTransformations,
+    selected = previewTransformations.first(),
     result = result,
+)
+
+private val previewTransformations = listOf(
+    Transformation("fix_grammar", "Fix grammar", "Fix it.", TransformationIcon.Spellcheck),
+    Transformation("summarize", "Summarize", "Summarize it.", TransformationIcon.Summarize),
+    Transformation("translate", "Translate", "Translate into {language}.", TransformationIcon.Translate),
 )

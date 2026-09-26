@@ -31,12 +31,18 @@ import com.mystic.grammio.data.transform.log.local.TransformationLogLocalDataSou
 import com.mystic.grammio.data.transform.log.local.TransformationLogPreferencesLocalDataSource
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
+import com.mystic.grammio.data.transformation.TransformationRepositoryImpl
+import com.mystic.grammio.data.transformation.local.DataStoreTransformationPreferencesLocalDataSource
+import com.mystic.grammio.data.transformation.local.SqlDelightTransformationLocalDataSource
+import com.mystic.grammio.data.transformation.local.TransformationLocalDataSource
+import com.mystic.grammio.data.transformation.local.TransformationPreferencesLocalDataSource
 import com.mystic.grammio.domain.repository.ApiKeyRepository
 import com.mystic.grammio.domain.repository.HistorySettingsRepository
 import com.mystic.grammio.domain.repository.ModelCatalogRepository
 import com.mystic.grammio.domain.repository.PromptSettingsRepository
 import com.mystic.grammio.domain.repository.ProviderSettingsRepository
 import com.mystic.grammio.domain.repository.TextTransformRepository
+import com.mystic.grammio.domain.repository.TransformationRepository
 import io.ktor.client.HttpClient
 import kotlin.time.Clock
 import org.koin.android.ext.koin.androidContext
@@ -49,6 +55,7 @@ private val apiKeyStore = named("apiKeyStore")
 private val providerSettingsStore = named("providerSettingsStore")
 private val historySettingsStore = named("historySettingsStore")
 private val promptSettingsStore = named("promptSettingsStore")
+private val transformationSettingsStore = named("transformationSettingsStore")
 
 val dataModule = module {
     single<HttpClient> { HttpClientFactory.create(enableLogging = BuildConfig.DEBUG) }
@@ -101,6 +108,18 @@ val dataModule = module {
         DataStorePromptPreferencesLocalDataSource(get(promptSettingsStore))
     } bind PromptPreferencesLocalDataSource::class
     single<PromptSettingsRepositoryImpl>() bind PromptSettingsRepository::class
+
+    // Transformations: rows in grammio.db, plus a seeded-defaults flag in its own DataStore file.
+    single<DataStore<Preferences>>(transformationSettingsStore) {
+        PreferenceDataStoreFactory.create {
+            androidContext().preferencesDataStoreFile(DataStoreTransformationPreferencesLocalDataSource.DATASTORE_NAME)
+        }
+    }
+    single {
+        DataStoreTransformationPreferencesLocalDataSource(get(transformationSettingsStore))
+    } bind TransformationPreferencesLocalDataSource::class
+    single<SqlDelightTransformationLocalDataSource>() bind TransformationLocalDataSource::class
+    single<TransformationRepositoryImpl>() bind TransformationRepository::class
 
     single<PromptBuilder>()
     single<ModelOutputSanitizer>()

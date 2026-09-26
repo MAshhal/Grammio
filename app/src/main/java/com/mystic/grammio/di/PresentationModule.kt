@@ -10,7 +10,9 @@ import org.koin.plugin.module.dsl.viewModel
 
 val presentationModule = module {
     // Classic DSL: this ViewModel takes a runtime parameter (the parsed Intent) via parametersOf.
-    viewModel { params -> ProcessTextViewModel(input = params.get(), transformText = get()) }
+    viewModel { params ->
+        ProcessTextViewModel(input = params.get(), transformText = get(), transformationRepository = get())
+    }
     viewModel<ProviderSettingsViewModel>()
     viewModel<SystemPromptViewModel>()
     viewModel<HistorySettingsViewModel>()

@@ -4,8 +4,9 @@ CREATE TABLE transformation_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     -- Epoch milliseconds, when the transformation started.
     created_at INTEGER NOT NULL,
+    -- Id of the transformation that ran. It may since have been edited or deleted.
     transformation TEXT NOT NULL,
-    -- BCP-47 tag; only set for translations.
+    -- BCP-47 tag; only set when the transformation asked for a target language.
     target_language TEXT,
     provider TEXT NOT NULL,
     -- Null when the provider could not be resolved (no key, no model, ...).

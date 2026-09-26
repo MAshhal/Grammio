@@ -9,6 +9,7 @@ import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.AiProvider
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.result.Outcome
+import com.mystic.grammio.testing.TestTransformations
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Instant
 import kotlinx.coroutines.test.runTest
@@ -28,7 +29,8 @@ class SqlDelightTransformationLogLocalDataSourceTest {
     fun `records a successful transformation`() = runTest {
         dataSource.record(
             entry(
-                transformation = Transformation.Translate("es"),
+                transformation = TestTransformations.translate,
+                targetLanguageTag = "es",
                 result = Outcome.Success("Hola."),
             ),
         )
@@ -89,13 +91,15 @@ class SqlDelightTransformationLogLocalDataSourceTest {
 
     private fun entry(
         startedAt: Instant = Instant.fromEpochMilliseconds(1_700_000_000_000),
-        transformation: Transformation = Transformation.FixGrammar,
+        transformation: Transformation = TestTransformations.fixGrammar,
+        targetLanguageTag: String? = null,
         modelId: String? = "claude-haiku-4-5",
         inputText: String = "Hello.",
         result: Outcome<String, TransformError> = Outcome.Success("Hello."),
     ) = TransformationLogEntry(
         startedAt = startedAt,
         transformation = transformation,
+        targetLanguageTag = targetLanguageTag,
         provider = AiProvider.Anthropic,
         modelId = modelId,
         inputText = inputText,

@@ -5,6 +5,7 @@
 
     <!-- Process text sheet -->
     <string name="process_no_text">No text was received. Select some text and try again.</string>
+    <string name="process_no_transformations">No transformations are turned on. Add or turn some on in Grammio settings.</string>
     <string name="process_pick_transformation">Pick a transformation above.</string>
     <string name="process_target_language">Into: %1$s</string>
     <string name="process_selected_text">Selected text</string>
@@ -70,15 +71,6 @@
     <string name="provider_openai_compatible">OpenAI-compatible endpoint</string>
     <string name="provider_openai_compatible_description">OpenRouter, Groq and other services with an OpenAI-style API</string>
 
-    <!-- Transformations -->
-    <string name="transformation_fix_grammar">Fix grammar</string>
-    <string name="transformation_rephrase">Rephrase</string>
-    <string name="transformation_professional">Professional</string>
-    <string name="transformation_casual">Casual</string>
-    <string name="transformation_shorten">Shorten</string>
-    <string name="transformation_expand">Expand</string>
-    <string name="transformation_summarize">Summarize</string>
-    <string name="transformation_translate">Translate</string>
 
     <!-- Errors -->
     <string name="error_empty_input">There is no text to transform.</string>

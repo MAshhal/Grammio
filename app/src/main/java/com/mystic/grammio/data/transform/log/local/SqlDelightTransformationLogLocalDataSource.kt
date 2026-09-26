@@ -5,7 +5,6 @@ import com.mystic.grammio.data.db.GrammioDatabase
 import com.mystic.grammio.data.provider.storageKey
 import com.mystic.grammio.data.transform.log.TransformationLogEntry
 import com.mystic.grammio.data.transform.log.storageKey
-import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.result.Outcome
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -31,8 +30,8 @@ class SqlDelightTransformationLogLocalDataSource(private val database: GrammioDa
     private fun insert(entry: TransformationLogEntry) {
         database.transformationLogQueries.insert(
             created_at = entry.startedAt.toEpochMilliseconds(),
-            transformation = entry.transformation.storageKey,
-            target_language = (entry.transformation as? Transformation.Translate)?.targetLanguageTag,
+            transformation = entry.transformation.id,
+            target_language = entry.targetLanguageTag,
             provider = entry.provider.storageKey,
             model_id = entry.modelId,
             input_text = entry.inputText,

@@ -1,0 +1,10 @@
+-- Version 1 → 2: user-defined transformations. Must match the table in Transformation.sq.
+CREATE TABLE transformation (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    task_prompt TEXT NOT NULL,
+    icon TEXT NOT NULL,
+    is_enabled INTEGER NOT NULL,
+    temperature REAL NOT NULL,
+    position INTEGER NOT NULL
+);

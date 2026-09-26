@@ -10,14 +10,17 @@ import com.mystic.grammio.domain.repository.ModelCatalogRepository
 import com.mystic.grammio.domain.repository.PromptSettingsRepository
 import com.mystic.grammio.domain.repository.ProviderSettingsRepository
 import com.mystic.grammio.domain.repository.TextTransformRepository
+import com.mystic.grammio.domain.repository.TransformationRepository
 import com.mystic.grammio.domain.usecase.TransformTextUseCase
 import com.mystic.grammio.presentation.process.ProcessTextInput
 import com.mystic.grammio.presentation.process.ProcessTextViewModel
 import com.mystic.grammio.presentation.settings.history.HistorySettingsViewModel
 import com.mystic.grammio.presentation.settings.prompt.SystemPromptViewModel
 import com.mystic.grammio.presentation.settings.provider.ProviderSettingsViewModel
+import com.mystic.grammio.testing.MainDispatcherRule
 import io.mockk.mockk
 import org.junit.After
+import org.junit.Rule
 import org.junit.Test
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -27,6 +30,11 @@ import org.koin.dsl.module
 
 /** Resolves everything the app asks Koin for, so wiring mistakes fail here instead of on device. */
 class DependencyGraphTest {
+
+    // ViewModels start collecting in init; on a test Main dispatcher that nobody advances, that work
+    // never runs, so nothing outlives stopKoin().
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
 
     @After
     fun tearDown() = stopKoin()
@@ -43,6 +51,7 @@ class DependencyGraphTest {
         assertThat(koin.get<ProviderSettingsRepository>()).isNotNull()
         assertThat(koin.get<ModelCatalogRepository>()).isNotNull()
         assertThat(koin.get<PromptSettingsRepository>()).isNotNull()
+        assertThat(koin.get<TransformationRepository>()).isNotNull()
         assertThat(koin.get<TransformTextUseCase>()).isNotNull()
         assertThat(koin.get<ProviderSettingsViewModel>()).isNotNull()
         assertThat(koin.get<HistorySettingsViewModel>()).isNotNull()

@@ -7,7 +7,10 @@ import com.mystic.grammio.domain.repository.TextTransformRepository
 import com.mystic.grammio.domain.result.Outcome
 import kotlinx.coroutines.delay
 
-/** Records calls and answers with [nextResult] (or an echo) after [latencyMs] of virtual time. */
+/**
+ * Records calls and answers with [nextResult] after [latencyMs] of virtual time. Without one it
+ * echoes "id:text", or "id[language]:text" for a transformation that uses the target language.
+ */
 class RecordingTextTransformRepository(var latencyMs: Long = 0) : TextTransformRepository {
     val calls = mutableListOf<Pair<String, Transformation>>()
     var nextResult: Outcome<TransformedText, TransformError>? = null
@@ -15,9 +18,11 @@ class RecordingTextTransformRepository(var latencyMs: Long = 0) : TextTransformR
     override suspend fun transform(
         text: String,
         transformation: Transformation,
+        targetLanguageTag: String,
     ): Outcome<TransformedText, TransformError> {
         calls += text to transformation
         delay(latencyMs)
-        return nextResult ?: Outcome.Success(TransformedText("$transformation:$text", transformation))
+        val label = transformation.id + if (transformation.usesTargetLanguage) "[$targetLanguageTag]" else ""
+        return nextResult ?: Outcome.Success(TransformedText("$label:$text", transformation))
     }
 }

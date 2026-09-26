@@ -7,7 +7,6 @@ import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
 import com.mystic.grammio.domain.error.TransformError
 import com.mystic.grammio.domain.model.AiProvider
-import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.model.TransformedText
 import com.mystic.grammio.domain.result.Outcome
 import com.mystic.grammio.domain.result.map
@@ -18,6 +17,10 @@ import com.mystic.grammio.testing.FixedClock
 import com.mystic.grammio.testing.InMemoryPromptSettingsRepository
 import com.mystic.grammio.testing.RecordingTransformationLogLocalDataSource
 import com.mystic.grammio.testing.StubLlmDataSource
+import com.mystic.grammio.testing.TestTransformations.casual
+import com.mystic.grammio.testing.TestTransformations.fixGrammar
+import com.mystic.grammio.testing.TestTransformations.shorten
+import com.mystic.grammio.testing.TestTransformations.translate
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
@@ -50,9 +53,9 @@ class TextTransformRepositoryImplTest {
 
     @Test
     fun `builds the prompt from the input and wraps the reply`() = runTest {
-        val result = repository.transform("helo", Transformation.FixGrammar)
+        val result = repository.transform("helo", fixGrammar, "en")
 
-        assertThat(result).isEqualTo(Outcome.Success(TransformedText("Hello.", Transformation.FixGrammar)))
+        assertThat(result).isEqualTo(Outcome.Success(TransformedText("Hello.", fixGrammar)))
         assertThat(llmDataSource.lastPrompt?.userText).contains("helo")
         assertThat(llmDataSource.lastConnection?.apiKey).isEqualTo("test-key")
     }
@@ -61,7 +64,7 @@ class TextTransformRepositoryImplTest {
     fun `sends the user's system prompt`() = runTest {
         promptSettings.setSystemPrompt("Always answer in lowercase.")
 
-        repository.transform("helo", Transformation.FixGrammar)
+        repository.transform("helo", fixGrammar, "en")
 
         assertThat(llmDataSource.lastPrompt?.systemInstruction).startsWith("Always answer in lowercase.")
     }
@@ -70,9 +73,9 @@ class TextTransformRepositoryImplTest {
     fun `calls the active provider's data source with its connection`() = runTest {
         preferences.setActiveProvider(AiProvider.Anthropic)
 
-        val result = repository.transform("hi", Transformation.Casual)
+        val result = repository.transform("hi", casual, "en")
 
-        assertThat(result).isEqualTo(Outcome.Success(TransformedText("From Claude.", Transformation.Casual)))
+        assertThat(result).isEqualTo(Outcome.Success(TransformedText("From Claude.", casual)))
         assertThat(anthropicDataSource.lastConnection?.apiKey).isEqualTo("ant-key")
         assertThat(llmDataSource.lastPrompt).isNull()
     }
@@ -82,7 +85,7 @@ class TextTransformRepositoryImplTest {
         apiKeyDataSource.write(AiProvider.OpenAiCompatible, "key")
         preferences.setActiveProvider(AiProvider.OpenAiCompatible)
 
-        assertThat(repository.transform("x", Transformation.Shorten))
+        assertThat(repository.transform("x", shorten, "en"))
             .isEqualTo(Outcome.Failure(TransformError.ProviderNotConfigured))
     }
 
@@ -90,7 +93,7 @@ class TextTransformRepositoryImplTest {
     fun `missing key fails without calling the LLM`() = runTest {
         apiKeyDataSource.clear(AiProvider.Gemini)
 
-        assertThat(repository.transform("x", Transformation.Shorten))
+        assertThat(repository.transform("x", shorten, "en"))
             .isEqualTo(Outcome.Failure(TransformError.MissingApiKey))
         assertThat(llmDataSource.lastPrompt).isNull()
     }
@@ -99,7 +102,7 @@ class TextTransformRepositoryImplTest {
     fun `LLM failures pass through`() = runTest {
         llmDataSource.reply = Outcome.Failure(TransformError.RateLimited)
 
-        assertThat(repository.transform("x", Transformation.Shorten))
+        assertThat(repository.transform("x", shorten, "en"))
             .isEqualTo(Outcome.Failure(TransformError.RateLimited))
     }
 
@@ -107,7 +110,7 @@ class TextTransformRepositoryImplTest {
     fun `reply that is empty after cleanup is a failure`() = runTest {
         llmDataSource.reply = Outcome.Success("  \"\"  ")
 
-        assertThat(repository.transform("x", Transformation.Shorten))
+        assertThat(repository.transform("x", shorten, "en"))
             .isEqualTo(Outcome.Failure(TransformError.Unknown))
     }
 
@@ -116,11 +119,12 @@ class TextTransformRepositoryImplTest {
         preferences.setActiveProvider(AiProvider.Anthropic)
         preferences.setSelectedModel(AiProvider.Anthropic, "claude-haiku-4-5")
 
-        repository.transform("hi", Transformation.Translate("es"))
+        repository.transform("hi", translate, "es")
 
         val entry = transformationLog.entries.single()
         assertThat(entry.startedAt).isEqualTo(clock.now)
-        assertThat(entry.transformation).isEqualTo(Transformation.Translate("es"))
+        assertThat(entry.transformation).isEqualTo(translate)
+        assertThat(entry.targetLanguageTag).isEqualTo("es")
         assertThat(entry.provider).isEqualTo(AiProvider.Anthropic)
         assertThat(entry.modelId).isEqualTo("claude-haiku-4-5")
         assertThat(entry.inputText).isEqualTo("hi")
@@ -128,12 +132,19 @@ class TextTransformRepositoryImplTest {
     }
 
     @Test
+    fun `logs no target language for a transformation that doesn't use one`() = runTest {
+        repository.transform("helo", fixGrammar, "es")
+
+        assertThat(transformationLog.entries.single().targetLanguageTag).isNull()
+    }
+
+    @Test
     fun `logs nothing unless history is on`() = runTest {
         logPreferences.setEnabled(false)
 
-        val result = repository.transform("helo", Transformation.FixGrammar)
+        val result = repository.transform("helo", fixGrammar, "en")
 
-        assertThat(result).isEqualTo(Outcome.Success(TransformedText("Hello.", Transformation.FixGrammar)))
+        assertThat(result).isEqualTo(Outcome.Success(TransformedText("Hello.", fixGrammar)))
         assertThat(transformationLog.entries).isEmpty()
     }
 
@@ -141,7 +152,7 @@ class TextTransformRepositoryImplTest {
     fun `logs the cleaned-up text, not the raw reply`() = runTest {
         llmDataSource.reply = Outcome.Success("  \"Hello.\"  ")
 
-        val result = repository.transform("helo", Transformation.FixGrammar)
+        val result = repository.transform("helo", fixGrammar, "en")
 
         assertThat(transformationLog.entries.single().result).isEqualTo(result.map { it.text })
     }
@@ -150,7 +161,7 @@ class TextTransformRepositoryImplTest {
     fun `logs an LLM failure with the model it happened on`() = runTest {
         llmDataSource.reply = Outcome.Failure(TransformError.RateLimited)
 
-        repository.transform("x", Transformation.Shorten)
+        repository.transform("x", shorten, "en")
 
         val entry = transformationLog.entries.single()
         assertThat(entry.modelId).isNotNull()
@@ -161,7 +172,7 @@ class TextTransformRepositoryImplTest {
     fun `logs a provider that could not be resolved, without a model`() = runTest {
         apiKeyDataSource.clear(AiProvider.Gemini)
 
-        repository.transform("x", Transformation.Shorten)
+        repository.transform("x", shorten, "en")
 
         val entry = transformationLog.entries.single()
         assertThat(entry.provider).isEqualTo(AiProvider.Gemini)

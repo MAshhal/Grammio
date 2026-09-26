@@ -3,9 +3,9 @@ package com.mystic.grammio.presentation.process
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mystic.grammio.domain.model.Transformation
+import com.mystic.grammio.domain.repository.TransformationRepository
 import com.mystic.grammio.domain.result.Outcome
 import com.mystic.grammio.domain.usecase.TransformTextUseCase
-import com.mystic.grammio.presentation.process.model.TransformationOptions
 import java.util.Locale
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -20,6 +22,7 @@ import kotlinx.coroutines.launch
 class ProcessTextViewModel(
     input: ProcessTextInput,
     private val transformText: TransformTextUseCase,
+    transformationRepository: TransformationRepository,
     defaultTargetLanguageTag: String = Locale.getDefault().language,
 ) : ViewModel() {
 
@@ -28,7 +31,6 @@ class ProcessTextViewModel(
             originalText = input.text,
             canReplace = input.canReplace,
             targetLanguageTag = defaultTargetLanguageTag,
-            transformations = TransformationOptions.all(defaultTargetLanguageTag),
         ),
     )
     val state: StateFlow<ProcessTextUiState> = _state.asStateFlow()
@@ -37,6 +39,13 @@ class ProcessTextViewModel(
     val effects: Flow<ProcessTextEffect> = _effects.receiveAsFlow()
 
     private var transformJob: Job? = null
+
+    init {
+        // Listing has no rules to hold, so this reads the repository directly rather than via a use case.
+        transformationRepository.transformations
+            .onEach { all -> _state.update { it.copy(transformations = all.filter(Transformation::isEnabled)) } }
+            .launchIn(viewModelScope)
+    }
 
     fun onAction(action: ProcessTextAction) {
         when (action) {
@@ -61,11 +70,9 @@ class ProcessTextViewModel(
     }
 
     private fun changeTargetLanguage(languageTag: String) {
-        _state.update {
-            it.copy(targetLanguageTag = languageTag, transformations = TransformationOptions.all(languageTag))
-        }
-        // Re-run only if the user is currently looking at a translation.
-        if (_state.value.selected is Transformation.Translate) run(Transformation.Translate(languageTag))
+        _state.update { it.copy(targetLanguageTag = languageTag) }
+        // Re-run only if the user is looking at a result that depends on the language.
+        _state.value.selected?.takeIf { it.usesTargetLanguage }?.let(::run)
     }
 
     /** Starts a transformation, cancelling any in-flight one so only the latest choice wins. */
@@ -73,7 +80,14 @@ class ProcessTextViewModel(
         transformJob?.cancel()
         _state.update { it.copy(selected = transformation, result = ResultUiState.Loading) }
         transformJob = viewModelScope.launch {
-            val result = when (val outcome = transformText(_state.value.originalText, transformation)) {
+            val current = _state.value
+            val result = when (
+                val outcome = transformText(
+                    current.originalText,
+                    transformation,
+                    current.targetLanguageTag,
+                )
+            ) {
                 is Outcome.Success -> ResultUiState.Success(outcome.value.text)
                 is Outcome.Failure -> ResultUiState.Failure(outcome.error)
             }
