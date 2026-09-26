@@ -1,22 +1,26 @@
 package com.mystic.grammio.testing
 
 import com.mystic.grammio.data.apikey.local.ApiKeyLocalDataSource
+import com.mystic.grammio.domain.model.AiProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
 /** In-memory stand-in for the Keystore-backed store, which cannot run on the JVM. */
-class FakeApiKeyLocalDataSource(storedKey: String? = null) : ApiKeyLocalDataSource {
-    private val key = MutableStateFlow(storedKey)
+class FakeApiKeyLocalDataSource(storedKeys: Map<AiProvider, String> = emptyMap()) : ApiKeyLocalDataSource {
+    private val keys = MutableStateFlow(storedKeys)
 
-    override val hasKey = key.map { it != null }
+    override fun hasKey(provider: AiProvider) = keys.map { provider in it }
 
-    override suspend fun read(): String? = key.value
+    override suspend fun read(provider: AiProvider): String? = keys.value[provider]
 
-    override suspend fun write(apiKey: String) {
-        key.value = apiKey
+    override suspend fun write(
+        provider: AiProvider,
+        apiKey: String,
+    ) {
+        keys.value += provider to apiKey
     }
 
-    override suspend fun clear() {
-        key.value = null
+    override suspend fun clear(provider: AiProvider) {
+        keys.value -= provider
     }
 }

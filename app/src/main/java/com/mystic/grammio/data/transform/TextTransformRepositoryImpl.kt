@@ -7,6 +7,7 @@ import com.mystic.grammio.data.llm.gemini.GeminiDataSource
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
 import com.mystic.grammio.domain.error.TransformError
+import com.mystic.grammio.domain.model.AiProvider
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.model.TransformedText
 import com.mystic.grammio.domain.repository.TextTransformRepository
@@ -24,7 +25,7 @@ class TextTransformRepositoryImpl(
         text: String,
         transformation: Transformation,
     ): Outcome<TransformedText, TransformError> {
-        val apiKey = apiKeyDataSource.read() ?: return Outcome.Failure(TransformError.MissingApiKey)
+        val apiKey = apiKeyDataSource.read(AiProvider.Gemini) ?: return Outcome.Failure(TransformError.MissingApiKey)
         val prompt = promptBuilder.build(text, transformation)
         val connection = LlmConnection(apiKey, GeminiDataSource.MODEL, GeminiDataSource.BASE_URL)
 

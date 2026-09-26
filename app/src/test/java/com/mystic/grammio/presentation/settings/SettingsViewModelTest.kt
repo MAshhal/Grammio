@@ -1,6 +1,7 @@
 package com.mystic.grammio.presentation.settings
 
 import com.google.common.truth.Truth.assertThat
+import com.mystic.grammio.domain.model.AiProvider
 import com.mystic.grammio.domain.usecase.SaveApiKeyUseCase
 import com.mystic.grammio.testing.InMemoryApiKeyRepository
 import com.mystic.grammio.testing.MainDispatcherRule
@@ -31,7 +32,7 @@ class SettingsViewModelTest {
         viewModel.onAction(SettingsAction.Save)
         advanceUntilIdle()
 
-        assertThat(repository.saved).isEqualTo("AIza-key")
+        assertThat(repository.saved[AiProvider.Gemini]).isEqualTo("AIza-key")
         assertThat(viewModel.state.value).isEqualTo(SettingsUiState(hasApiKey = true, keyInput = ""))
     }
 
@@ -42,10 +43,10 @@ class SettingsViewModelTest {
         viewModel.onAction(SettingsAction.KeyInputChanged("   "))
         viewModel.onAction(SettingsAction.Save)
         advanceUntilIdle()
-        assertThat(repository.saved).isNull()
+        assertThat(repository.saved).isEmpty()
         assertThat(viewModel.state.value.canSave).isFalse()
 
-        repository.save("k")
+        repository.save(AiProvider.Gemini, "k")
         advanceUntilIdle()
         assertThat(viewModel.state.value.hasApiKey).isTrue()
 

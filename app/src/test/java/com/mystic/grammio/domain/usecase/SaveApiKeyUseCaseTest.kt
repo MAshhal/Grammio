@@ -1,6 +1,7 @@
 package com.mystic.grammio.domain.usecase
 
 import com.google.common.truth.Truth.assertThat
+import com.mystic.grammio.domain.model.AiProvider
 import com.mystic.grammio.testing.InMemoryApiKeyRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -11,16 +12,16 @@ class SaveApiKeyUseCaseTest {
     private val saveApiKey = SaveApiKeyUseCase(repository)
 
     @Test
-    fun `key is trimmed before saving`() = runTest {
-        assertThat(saveApiKey("  AIza-key \n")).isTrue()
+    fun `key is trimmed and saved for its provider`() = runTest {
+        assertThat(saveApiKey(AiProvider.Anthropic, "  sk-ant-key \n")).isTrue()
 
-        assertThat(repository.saved).isEqualTo("AIza-key")
+        assertThat(repository.saved).containsExactly(AiProvider.Anthropic, "sk-ant-key")
     }
 
     @Test
     fun `blank key is refused`() = runTest {
-        assertThat(saveApiKey(" \t ")).isFalse()
+        assertThat(saveApiKey(AiProvider.Gemini, " \t ")).isFalse()
 
-        assertThat(repository.saved).isNull()
+        assertThat(repository.saved).isEmpty()
     }
 }

@@ -7,6 +7,7 @@ import com.mystic.grammio.data.llm.LlmPrompt
 import com.mystic.grammio.data.transform.prompt.PromptBuilder
 import com.mystic.grammio.data.transform.sanitize.ModelOutputSanitizer
 import com.mystic.grammio.domain.error.TransformError
+import com.mystic.grammio.domain.model.AiProvider
 import com.mystic.grammio.domain.model.Transformation
 import com.mystic.grammio.domain.model.TransformedText
 import com.mystic.grammio.domain.result.Outcome
@@ -29,7 +30,7 @@ class TextTransformRepositoryImplTest {
         }
     }
 
-    private val apiKeyDataSource = FakeApiKeyLocalDataSource(storedKey = "test-key")
+    private val apiKeyDataSource = FakeApiKeyLocalDataSource(mapOf(AiProvider.Gemini to "test-key"))
     private val llmDataSource = StubLlmDataSource(Outcome.Success("Hello."))
     private val repository = TextTransformRepositoryImpl(
         apiKeyDataSource = apiKeyDataSource,
@@ -49,7 +50,7 @@ class TextTransformRepositoryImplTest {
 
     @Test
     fun `missing key fails without calling the LLM`() = runTest {
-        apiKeyDataSource.clear()
+        apiKeyDataSource.clear(AiProvider.Gemini)
 
         assertThat(repository.transform("x", Transformation.Shorten))
             .isEqualTo(Outcome.Failure(TransformError.MissingApiKey))

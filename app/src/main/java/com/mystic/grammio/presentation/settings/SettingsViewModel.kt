@@ -2,6 +2,7 @@ package com.mystic.grammio.presentation.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mystic.grammio.domain.model.AiProvider
 import com.mystic.grammio.domain.repository.ApiKeyRepository
 import com.mystic.grammio.domain.usecase.SaveApiKeyUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +25,9 @@ class SettingsViewModel(
     private val keyInput = MutableStateFlow("")
 
     val state: StateFlow<SettingsUiState> =
-        combine(apiKeyRepository.hasApiKey, keyInput) { hasKey, input -> SettingsUiState(hasKey, input) }
+        combine(apiKeyRepository.hasApiKey(AiProvider.Gemini), keyInput) { hasKey, input ->
+            SettingsUiState(hasKey, input)
+        }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsUiState())
 
     fun onAction(action: SettingsAction) {
@@ -32,10 +35,10 @@ class SettingsViewModel(
             is SettingsAction.KeyInputChanged -> keyInput.value = action.value
 
             SettingsAction.Save -> viewModelScope.launch {
-                if (saveApiKey(keyInput.value)) keyInput.update { "" }
+                if (saveApiKey(AiProvider.Gemini, keyInput.value)) keyInput.update { "" }
             }
 
-            SettingsAction.Clear -> viewModelScope.launch { apiKeyRepository.clear() }
+            SettingsAction.Clear -> viewModelScope.launch { apiKeyRepository.clear(AiProvider.Gemini) }
         }
     }
 }

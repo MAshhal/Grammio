@@ -9,6 +9,7 @@ import com.mystic.grammio.data.apikey.ApiKeyRepositoryImpl
 import com.mystic.grammio.data.apikey.crypto.KeystoreCipher
 import com.mystic.grammio.data.apikey.local.ApiKeyLocalDataSource
 import com.mystic.grammio.data.apikey.local.EncryptedApiKeyLocalDataSource
+import com.mystic.grammio.data.apikey.local.LegacyApiKeyMigration
 import com.mystic.grammio.data.llm.LlmDataSource
 import com.mystic.grammio.data.llm.gemini.GeminiDataSource
 import com.mystic.grammio.data.network.HttpClientFactory
@@ -28,7 +29,7 @@ val dataModule = module {
 
     // API key: its own DataStore file, so it can be excluded from backups by name.
     single<DataStore<Preferences>> {
-        PreferenceDataStoreFactory.create {
+        PreferenceDataStoreFactory.create(migrations = listOf(LegacyApiKeyMigration())) {
             androidContext().preferencesDataStoreFile(EncryptedApiKeyLocalDataSource.DATASTORE_NAME)
         }
     }
