@@ -106,7 +106,10 @@ private fun morphShape(
     return remember(radius) {
         RoundedCornerShape(
             object : CornerSize {
-                override fun toPx(shapeSize: Size, density: Density) = with(density) { radius.value.toPx() }
+                override fun toPx(
+                    shapeSize: Size,
+                    density: Density,
+                ) = with(density) { radius.value.toPx() }
             },
         )
     }
