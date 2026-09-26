@@ -99,11 +99,15 @@ The exhaustive `when`s in steps 1, 2, 4 and 5 fail to compile until each one is 
 
 ## Transformation log
 
-`TextTransformRepositoryImpl` records every attempt, successful or not, through
+Shown to the user as "history". It is opt-in: nothing is recorded until the Settings switch
+(`HistorySettingsRepository`, its own `history_settings` DataStore file) is on.
+
+While it is on, `TextTransformRepositoryImpl` records every attempt, successful or not, through
 `TransformationLogLocalDataSource` into the `transformation_log` table of `grammio.db`
 (SQLDelight, schema in `src/main/sqldelight`). Each row holds the input text, the cleaned-up
 output or the error, the transformation (plus target language), provider, model and duration.
 
+- Turning history off stops recording; it does not delete what was already saved.
 - Transformations, providers and errors are stored by their `storageKey`, never the Kotlin name.
 - Recording is best effort: a database failure is logged and never costs the user their result.
 - Input rejected by `TransformTextUseCase` (blank, too long) never reaches the repository, so it
