@@ -19,8 +19,9 @@ import org.koin.compose.viewmodel.koinViewModel
  * ViewModel lives exactly as long as the page is on the stack.
  */
 @Composable
-fun SettingsNavigation() {
-    val backStack = rememberNavBackStack(SettingsRoute.Home)
+fun SettingsNavigation(initialBackStack: List<SettingsRoute>) {
+    // Only the first composition uses the initial stack; after that the saved stack wins.
+    val backStack = rememberNavBackStack(*initialBackStack.toTypedArray())
     val goBack: () -> Unit = { backStack.removeLastOrNull() }
 
     NavDisplay(

@@ -51,8 +51,9 @@ class ProcessTextActivity : ComponentActivity() {
             ProcessTextEffect.Close -> finish()
 
             ProcessTextEffect.OpenSettings -> {
-                // We run inside the caller's task; open settings in Grammio's own task instead.
-                startActivity(Intent(this, SettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                // We run inside the caller's task; open settings in Grammio's own task instead. Errors
+                // that offer this are all about the provider, so go straight to its page.
+                startActivity(SettingsActivity.providerIntent(this).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 finish()
             }
         }
