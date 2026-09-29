@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Key
+import androidx.compose.material.icons.outlined.Keyboard
 import androidx.compose.material.icons.outlined.SmartToy
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.HorizontalDivider
@@ -26,9 +27,16 @@ import com.mystic.grammio.presentation.settings.components.SettingsNavigationRow
 import com.mystic.grammio.presentation.settings.components.SettingsScaffold
 import com.mystic.grammio.presentation.theme.GrammioTheme
 
-/** The first Settings page: how to use Grammio, and a row for each settings page. */
+/**
+ * The first Settings page: how to use Grammio, a row for each settings page, and one that opens the
+ * system's Accessibility settings to turn the keyboard button on or off.
+ */
 @Composable
-fun SettingsHomeScreen(onNavigate: (SettingsRoute) -> Unit) {
+fun SettingsHomeScreen(
+    keyboardButtonEnabled: Boolean,
+    onNavigate: (SettingsRoute) -> Unit,
+    onOpenKeyboardButtonSettings: () -> Unit,
+) {
     SettingsScaffold(title = stringResource(R.string.app_name), onBack = null) {
         HowToUseCard()
 
@@ -69,6 +77,19 @@ fun SettingsHomeScreen(onNavigate: (SettingsRoute) -> Unit) {
                     onClick = { onNavigate(SettingsRoute.History) },
                     modifier = Modifier.morphsInto(SettingsRoute.History),
                 )
+                RowDivider()
+                SettingsNavigationRow(
+                    icon = Icons.Outlined.Keyboard,
+                    title = stringResource(R.string.settings_keyboard_button_title),
+                    description = stringResource(
+                        if (keyboardButtonEnabled) {
+                            R.string.settings_keyboard_button_on
+                        } else {
+                            R.string.settings_keyboard_button_off
+                        },
+                    ),
+                    onClick = onOpenKeyboardButtonSettings,
+                )
             }
         }
     }
@@ -103,6 +124,6 @@ private fun HowToUseCard() {
 @Composable
 private fun SettingsHomeScreenPreview() {
     GrammioTheme {
-        SettingsHomeScreen(onNavigate = {})
+        SettingsHomeScreen(keyboardButtonEnabled = false, onNavigate = {}, onOpenKeyboardButtonSettings = {})
     }
 }

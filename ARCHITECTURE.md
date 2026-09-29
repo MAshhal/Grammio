@@ -90,6 +90,9 @@ Keyboard button ─── GrammioAccessibilityService ─ alias ─────�
   PROCESS_TEXT extras. A service has no caller to return a result to, so it leaves the field with
   `SelectionReplacer`, and Replace writes the whole text back with the selection swapped. If the app
   refuses, the result is copied instead. Field text is read only when the button is pressed.
+  The Settings home's Keyboard button row shows whether the service is on and opens the system page
+  to change it (`AccessibilitySettings.kt`): Grammio's own page on Android 13+, otherwise the
+  Accessibility list with Grammio highlighted.
 - `ProcessTextInput` decides whether Replace is offered: the selection isn't read-only, and either
   the caller wants a result or the launch came through the alias. Only Grammio can start the alias,
   so another app can't claim to be the service.
@@ -103,7 +106,8 @@ Keyboard button ─── GrammioAccessibilityService ─ alias ─────�
 Home ─┬─ Provider            provider, endpoint, API key, model
       ├─ Transformations ─── TransformationEditor(id)   (null id = new)
       ├─ SystemPrompt
-      └─ History             history switch, privacy note, recent entries
+      ├─ History             history switch, privacy note, recent entries
+      └─ (Keyboard button)   opens the system's Accessibility settings, not a page
 ```
 
 - Each entry gets its own `ViewModelStore` (`rememberViewModelStoreNavEntryDecorator`), so a page's

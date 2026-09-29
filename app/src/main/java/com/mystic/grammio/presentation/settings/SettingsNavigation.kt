@@ -8,7 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.EntryProviderScope
@@ -17,6 +22,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.mystic.grammio.presentation.accessibility.isGrammioAccessibilityEnabled
+import com.mystic.grammio.presentation.accessibility.openGrammioAccessibilitySettings
 import com.mystic.grammio.presentation.settings.history.HistorySettingsScreen
 import com.mystic.grammio.presentation.settings.history.HistorySettingsViewModel
 import com.mystic.grammio.presentation.settings.prompt.SystemPromptScreen
@@ -59,7 +66,20 @@ fun SettingsNavigation(initialBackStack: List<SettingsRoute>) {
                 predictivePopTransitionSpec = SettingsTransitions.predictivePop,
                 entryProvider = entryProvider {
                     entry<SettingsRoute.Home> {
-                        SettingsHomeScreen(onNavigate = { backStack.add(it) })
+                        val context = LocalContext.current
+                        // Read again on every resume: the user turns it on or off in the system's settings.
+                        var keyboardButtonEnabled by remember {
+                            mutableStateOf(context.isGrammioAccessibilityEnabled())
+                        }
+                        LifecycleResumeEffect(Unit) {
+                            keyboardButtonEnabled = context.isGrammioAccessibilityEnabled()
+                            onPauseOrDispose {}
+                        }
+                        SettingsHomeScreen(
+                            keyboardButtonEnabled = keyboardButtonEnabled,
+                            onNavigate = { backStack.add(it) },
+                            onOpenKeyboardButtonSettings = context::openGrammioAccessibilitySettings,
+                        )
                     }
                     pageEntry<SettingsRoute.Provider> {
                         val viewModel: ProviderSettingsViewModel = koinViewModel()
