@@ -12,6 +12,7 @@ import com.mystic.grammio.domain.repository.ProviderSettingsRepository
 import com.mystic.grammio.domain.repository.TextTransformRepository
 import com.mystic.grammio.domain.repository.TransformationRepository
 import com.mystic.grammio.domain.usecase.TransformTextUseCase
+import com.mystic.grammio.presentation.accessibility.SelectionReplacer
 import com.mystic.grammio.presentation.process.ProcessTextInput
 import com.mystic.grammio.presentation.process.ProcessTextViewModel
 import com.mystic.grammio.presentation.settings.history.HistorySettingsViewModel
@@ -59,6 +60,7 @@ class DependencyGraphTest {
         assertThat(koin.get<HistorySettingsViewModel>()).isNotNull()
         assertThat(koin.get<SystemPromptViewModel>()).isNotNull()
         assertThat(koin.get<TransformationsViewModel>()).isNotNull()
+        assertThat(koin.get<SelectionReplacer>()).isSameInstanceAs(koin.get<SelectionReplacer>())
         assertThat(koin.get<TransformationEditorViewModel> { parametersOf(null) }.state.value.isNew).isTrue()
         assertThat(koin.get<TransformationEditorViewModel> { parametersOf("fix_grammar") }.state.value.isNew).isFalse()
         assertThat(

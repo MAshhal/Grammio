@@ -45,6 +45,7 @@ below, is broken.
 | `presentation/settings/<page>` | One Settings page: ViewModel, UiState, Action, Screen | `presentation/settings/provider/*` |
 | `presentation/<screen>/components` | Stateless composables used by that screen | `ResultCard` |
 | `presentation/<screen>/model` | UI mapping of domain types (labels, messages, options) | `TransformErrorMessage` |
+| `presentation/accessibility` | The accessibility service entry point and the selection it hands the sheet | `GrammioAccessibilityService`, `SelectionReplacer` |
 | `presentation/common`, `presentation/theme` | Shared UI helpers and theme | `Clipboard`, `GrammioTheme` |
 
 ## Roles and naming
@@ -60,12 +61,37 @@ below, is broken.
 | `*UiState` / `*Action` / `*Effect` | Screen state, user intents, one-off events | Immutable data. The ViewModel is the only thing that creates state. |
 | `*ViewModel` | Screen logic | Exposes `StateFlow` state and a `Flow` of effects, and takes actions through `onAction`. |
 | `*Activity` | Host | Parses the Intent, renders the screen and performs effects. Contains no logic. |
+| `*Service` | Host | Like an Activity: finds its input, opens a screen with it. Contains no logic. |
 | `*Route` | Navigation key | `@Serializable` `NavKey`, so the back stack survives process death. |
 
 **Use cases are pragmatic.** A ViewModel may call a repository interface directly when a use case
 would only pass the call through. `SettingsViewModel` observes and clears the key through
 `ApiKeyRepository`, but saves through `SaveApiKeyUseCase` because saving has rules (trim the key,
 refuse a blank one).
+
+## Entry points
+
+Other apps reach the process sheet (`ProcessTextActivity`) two ways, and both end in the same
+ViewModel, transformations and result actions:
+
+```
+Selection menu ─── PROCESS_TEXT ──────────────────────────────▶ ProcessTextActivity
+Accessibility button ─ GrammioAccessibilityService ─ alias ───▶ ProcessTextActivity
+```
+
+- **Selection menu.** The system lists Grammio for `ACTION_PROCESS_TEXT`. Replace returns the text
+  as the activity result; the caller puts it in place.
+- **Accessibility service.** For apps whose menu doesn't list PROCESS_TEXT actions. The service
+  (opt-in, in the system's Accessibility settings) listens only for selection changes and keeps a
+  reference to where text was last selected, never the text. Pressing the accessibility button or
+  shortcut reads the selection (`TextSelection`) from the focused field, or else that view, and
+  opens the sheet through the non-exported `AccessibilityProcessTextActivity` alias with the same
+  PROCESS_TEXT extras. A service has no caller to return a result to, so it leaves the field with
+  `SelectionReplacer`, and Replace writes the whole text back with the selection swapped. If the app
+  refuses, the result is copied instead. Password fields are never read.
+- `ProcessTextInput` decides whether Replace is offered: the selection isn't read-only, and either
+  the caller wants a result or the launch came through the alias. Only Grammio can start the alias,
+  so another app can't claim to be the service.
 
 ## Settings navigation
 
