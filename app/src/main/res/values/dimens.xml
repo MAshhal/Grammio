@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The Grammio button the accessibility service floats above the keyboard. -->
+    <dimen name="keyboard_button_size">44dp</dimen>
+    <dimen name="keyboard_button_margin">8dp</dimen>
+</resources>

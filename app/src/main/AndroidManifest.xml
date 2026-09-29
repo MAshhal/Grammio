@@ -42,6 +42,27 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+        <!-- The same sheet, opened by the accessibility service. Not exported, so ProcessTextActivity
+             can trust that a launch through it came from Grammio and write the result back itself. -->
+        <activity-alias
+            android:name=".presentation.process.AccessibilityProcessTextActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:targetActivity=".presentation.process.ProcessTextActivity" />
+
+        <service
+            android:name=".presentation.accessibility.GrammioAccessibilityService"
+            android:exported="true"
+            android:label="@string/accessibility_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
     </application>
 
 </manifest>

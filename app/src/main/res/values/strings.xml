@@ -20,6 +20,13 @@
     <string name="action_manage_transformations">Manage transformations</string>
     <string name="copied_to_clipboard">Copied</string>
 
+    <!-- Accessibility service: offers Grammio in apps whose selection menu doesn't list it. -->
+    <string name="accessibility_service_label">Grammio button while typing</string>
+    <string name="accessibility_service_description">While you type in any app, a Grammio button appears above the keyboard. Press it to open Grammio on the text you selected, or on all of the field\'s text if nothing is selected. Replace puts the result back into the field.\n\nGrammio reads the field\'s text only when you press the button, never in password fields, and only sends it to your AI provider when you pick a transformation.</string>
+    <string name="accessibility_button_description">Open Grammio on this text</string>
+    <string name="accessibility_no_text">There\'s no text in this field yet.</string>
+    <string name="accessibility_replace_failed">This app didn\'t accept the new text, so it was copied instead.</string>
+
     <!-- Settings -->
     <string name="settings_provider_page_title">Provider and model</string>
     <string name="settings_provider_page_description">AI provider, API key and model</string>
