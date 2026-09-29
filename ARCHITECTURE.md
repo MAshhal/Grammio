@@ -85,8 +85,8 @@ Keyboard button ─── GrammioAccessibilityService ─ alias ─────�
   (opt-in, in the system's Accessibility settings) listens only for window, focus and typing events.
   While the keyboard is up for a non-password text field in another app (`TypingField`: marked
   editable, accepting new text, or an EditText by name, since custom fields such as X's aren't always
-  marked editable), it floats
-  `KeyboardButton`, an accessibility overlay, above the keyboard's top-right corner. Pressing it reads
+  marked editable), it floats `KeyboardButton`, an accessibility overlay, above the keyboard's
+  top-right corner. Pressing it reads
   the field's selection, or all of its text when nothing is selected (`TextSelection.selectionOrAll`),
   and opens the sheet through the non-exported `AccessibilityProcessTextActivity` alias with the same
   PROCESS_TEXT extras. A service has no caller to return a result to, so it leaves the field with
