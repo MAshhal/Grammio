@@ -82,14 +82,19 @@ Keyboard button ─── GrammioAccessibilityService ─ alias ─────�
 - **Selection menu.** The system lists Grammio for `ACTION_PROCESS_TEXT`. Replace returns the text
   as the activity result; the caller puts it in place.
 - **Accessibility service.** For apps whose menu doesn't list PROCESS_TEXT actions. The service
-  (opt-in, in the system's Accessibility settings) listens only for window and focus changes. While
-  the keyboard is up for an editable, non-password field in another app (`TypingField`), it floats
-  `KeyboardButton`, an accessibility overlay, above the keyboard's top-right corner. Pressing it reads
+  (opt-in, in the system's Accessibility settings) listens only for window, focus and typing events.
+  While the keyboard is up for a non-password text field in another app (`TypingField`: marked
+  editable, accepting new text, or an EditText by name, since custom fields such as X's aren't always
+  marked editable), it floats `KeyboardButton`, an accessibility overlay, above the keyboard's
+  top-right corner. Pressing it reads
   the field's selection, or all of its text when nothing is selected (`TextSelection.selectionOrAll`),
   and opens the sheet through the non-exported `AccessibilityProcessTextActivity` alias with the same
   PROCESS_TEXT extras. A service has no caller to return a result to, so it leaves the field with
   `SelectionReplacer`, and Replace writes the whole text back with the selection swapped. If the app
   refuses, the result is copied instead. Field text is read only when the button is pressed.
+  The Settings home's Keyboard button row shows whether the service is on and opens the system page
+  to change it (`AccessibilitySettings.kt`): the Accessibility list, scrolled to Grammio and
+  highlighted where the Settings app supports that.
 - `ProcessTextInput` decides whether Replace is offered: the selection isn't read-only, and either
   the caller wants a result or the launch came through the alias. Only Grammio can start the alias,
   so another app can't claim to be the service.
@@ -103,7 +108,8 @@ Keyboard button ─── GrammioAccessibilityService ─ alias ─────�
 Home ─┬─ Provider            provider, endpoint, API key, model
       ├─ Transformations ─── TransformationEditor(id)   (null id = new)
       ├─ SystemPrompt
-      └─ History             history switch, privacy note, recent entries
+      ├─ History             history switch, privacy note, recent entries
+      └─ (Keyboard button)   opens the system's Accessibility settings, not a page
 ```
 
 - Each entry gets its own `ViewModelStore` (`rememberViewModelStoreNavEntryDecorator`), so a page's
