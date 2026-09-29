@@ -28,7 +28,7 @@ it. Copy the result or replace the selected text in place.
    a free tier at [aistudio.google.com](https://aistudio.google.com).
 3. Select text in any app and tap **Grammio** in the selection menu.
 4. Optional: if an app's menu doesn't show Grammio, tap **Keyboard button** in Grammio's settings and
-   turn Grammio on in the Accessibility page it opens. While you type, press the Grammio button above
+   turn Grammio on in the Accessibility settings it opens. While you type, press the Grammio button above
    the keyboard. It works on the selected text, or on everything in the field if nothing is selected.
 
 ## Building
