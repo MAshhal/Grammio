@@ -27,12 +27,23 @@ class GrammioAccessibilityService : AccessibilityService() {
 
     private var button: KeyboardButton? = null
 
+    /**
+     * The text field that last reported focus, typing or a selection. Some apps (custom or web text
+     * fields) never report input focus, so this stands in for the focused field.
+     */
+    private var lastTextField: AccessibilityNodeInfo? = null
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         button = KeyboardButton(this, onPress = ::openSheet)
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent) = updateButton()
+    override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        if (event.eventType in TEXT_FIELD_EVENTS) {
+            event.source?.takeIf { it.typingField().isTextField }?.let { lastTextField = it }
+        }
+        updateButton()
+    }
 
     override fun onInterrupt() = Unit
 
@@ -40,20 +51,41 @@ class GrammioAccessibilityService : AccessibilityService() {
         button?.hide()
         button = null
         selectionReplacer.clear()
+        lastTextField = null
         super.onDestroy()
     }
 
     private fun updateButton() {
         val button = button ?: return
         val keyboardTop = keyboardTop()
-        val field = findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
-            ?.let { TypingField(it.packageName?.toString(), it.isEditable, it.isPassword) }
-        if (keyboardTop != null && field?.offersButton(ownPackage = packageName) == true) {
+        val field = keyboardTop?.let { currentTextField() }
+        if (keyboardTop != null && field?.typingField()?.offersButton(ownPackage = packageName) == true) {
             button.showAbove(keyboardTop)
         } else {
+            Logger.v { "Button hidden: keyboard=${keyboardTop != null}, field=${field?.typingField()}" }
             button.hide()
         }
     }
+
+    /**
+     * The field the user is typing in: the one with input focus, or else the one that last reported
+     * typing, as long as it is still on screen in the app in front.
+     */
+    private fun currentTextField(): AccessibilityNodeInfo? {
+        findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
+            ?.takeIf { it.typingField().isTextField }
+            ?.let { return it }
+        val activePackage = rootInActiveWindow?.packageName
+        return lastTextField?.takeIf { it.refresh() && it.isVisibleToUser && it.packageName == activePackage }
+    }
+
+    private fun AccessibilityNodeInfo.typingField() = TypingField(
+        packageName = packageName?.toString(),
+        className = className?.toString(),
+        editable = isEditable,
+        acceptsSetText = actionList.any { it.id == AccessibilityNodeInfo.ACTION_SET_TEXT },
+        password = isPassword,
+    )
 
     /** Top edge of the keyboard on screen, or null when no keyboard is showing. */
     private fun keyboardTop(): Int? = windows
@@ -61,7 +93,7 @@ class GrammioAccessibilityService : AccessibilityService() {
         ?.let { keyboard -> Rect().also(keyboard::getBoundsInScreen).top }
 
     private fun openSheet() {
-        val node = findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
+        val node = currentTextField()
         val selection = node?.selectionOrAll()
         if (selection == null) {
             Toast.makeText(this, R.string.accessibility_no_text, Toast.LENGTH_SHORT).show()
@@ -80,7 +112,12 @@ class GrammioAccessibilityService : AccessibilityService() {
         if (!refresh() || isPassword) return null
         // An empty field reports its hint as its text.
         val text = text.takeUnless { isShowingHintText }
-        return TextSelection.selectionOrAll(text, textSelectionStart, textSelectionEnd, editable = isEditable)
+        return TextSelection.selectionOrAll(
+            text,
+            textSelectionStart,
+            textSelectionEnd,
+            editable = typingField().isTextField,
+        )
     }
 
     private class NodeEditableField(private val node: AccessibilityNodeInfo) : EditableField {
@@ -104,5 +141,13 @@ class GrammioAccessibilityService : AccessibilityService() {
             node.performAction(AccessibilityNodeInfo.ACTION_SET_SELECTION, setSelection)
             return true
         }
+    }
+
+    private companion object {
+        val TEXT_FIELD_EVENTS = setOf(
+            AccessibilityEvent.TYPE_VIEW_FOCUSED,
+            AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED,
+            AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED,
+        )
     }
 }

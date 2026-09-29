@@ -6,7 +6,14 @@ import org.junit.Test
 class TypingFieldTest {
 
     private val own = "com.mystic.grammio"
-    private val field = TypingField(packageName = "com.example.chat", editable = true, password = false)
+    private val field = TypingField(
+        packageName = "com.example.chat",
+        className = "android.widget.EditText",
+        editable = true,
+        acceptsSetText = true,
+        password = false,
+    )
+    private val notText = field.copy(className = "android.widget.TextView", editable = false, acceptsSetText = false)
 
     @Test
     fun `offers the button for a text field in another app`() {
@@ -15,7 +22,14 @@ class TypingFieldTest {
 
     @Test
     fun `not for text the user can't edit`() {
-        assertThat(field.copy(editable = false).offersButton(own)).isFalse()
+        assertThat(notText.isTextField).isFalse()
+        assertThat(notText.offersButton(own)).isFalse()
+    }
+
+    @Test
+    fun `a custom field not marked editable still counts when it accepts text or is an EditText`() {
+        assertThat(notText.copy(acceptsSetText = true).offersButton(own)).isTrue()
+        assertThat(notText.copy(className = "com.twitter.ui.widget.TwitterEditText").offersButton(own)).isTrue()
     }
 
     @Test
