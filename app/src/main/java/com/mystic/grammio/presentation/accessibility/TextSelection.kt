@@ -51,5 +51,16 @@ data class TextSelection(
             val selection = TextSelection(text.toString(), from, to, editable)
             return selection.takeIf { it.selectedText.isNotBlank() }
         }
+
+        /**
+         * What the button works on in a text field: the selection if there is one, otherwise all of
+         * the field's text, so Replace rewrites the whole field. Null when the field is empty.
+         */
+        fun selectionOrAll(
+            text: CharSequence?,
+            start: Int,
+            end: Int,
+            editable: Boolean,
+        ): TextSelection? = of(text, start, end, editable) ?: text?.let { of(it, 0, it.length, editable) }
     }
 }

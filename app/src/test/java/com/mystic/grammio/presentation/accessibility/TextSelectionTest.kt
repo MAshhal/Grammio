@@ -51,4 +51,33 @@ class TextSelectionTest {
 
         assertThat(replaced).isEqualTo(TextSelection.Replaced("hello", 5))
     }
+
+    @Test
+    fun `with nothing selected, a field offers all of its text`() {
+        assertThat(TextSelection.selectionOrAll("I has a apple.", 5, 5, editable = true))
+            .isEqualTo(TextSelection("I has a apple.", 0, 14, editable = true))
+        assertThat(TextSelection.selectionOrAll("I has a apple.", -1, -1, editable = true)?.selectedText)
+            .isEqualTo("I has a apple.")
+    }
+
+    @Test
+    fun `a selection in a field still wins over its whole text`() {
+        assertThat(TextSelection.selectionOrAll("I has a apple.", 2, 5, editable = true)?.selectedText)
+            .isEqualTo("has")
+    }
+
+    @Test
+    fun `an empty field offers nothing`() {
+        assertThat(TextSelection.selectionOrAll("", 0, 0, editable = true)).isNull()
+        assertThat(TextSelection.selectionOrAll("   ", 1, 1, editable = true)).isNull()
+        assertThat(TextSelection.selectionOrAll(null, -1, -1, editable = true)).isNull()
+    }
+
+    @Test
+    fun `replacing all of the text leaves the cursor at its end`() {
+        val replaced = TextSelection.selectionOrAll("helo wrld", 9, 9, editable = true)!!
+            .replacedWith("hello world")
+
+        assertThat(replaced).isEqualTo(TextSelection.Replaced("hello world", 11))
+    }
 }

@@ -1,10 +1,11 @@
 package com.mystic.grammio.presentation.accessibility
 
-import android.accessibilityservice.AccessibilityButtonController
 import android.accessibilityservice.AccessibilityService
+import android.graphics.Rect
 import android.os.Bundle
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.view.accessibility.AccessibilityWindowInfo
 import android.widget.Toast
 import co.touchlab.kermit.Logger
 import com.mystic.grammio.R
@@ -12,67 +13,74 @@ import com.mystic.grammio.presentation.process.ProcessTextActivity
 import org.koin.android.ext.android.inject
 
 /**
- * Offers Grammio through the accessibility button or shortcut, for apps whose text-selection menu
- * doesn't list PROCESS_TEXT actions. Pressing it opens the same sheet on whatever is selected, and
- * Replace writes the result back into the field through [SelectionReplacer].
+ * Offers Grammio in apps whose text-selection menu doesn't list PROCESS_TEXT actions. While the
+ * keyboard is up for a text field, a [KeyboardButton] floats above it; pressing it opens the same
+ * sheet on the selected text, or on all of the field's text when nothing is selected. Replace writes
+ * the result back into the field through [SelectionReplacer].
  *
- * Kept thin like an Activity: it finds the selection and opens the sheet. It never logs or keeps
- * the text of other apps, only a reference to the view where text was last selected.
+ * Kept thin like an Activity: it decides when to show the button and opens the sheet. It reads a
+ * field's text only when the button is pressed, and never logs or keeps it.
  */
 class GrammioAccessibilityService : AccessibilityService() {
 
     private val selectionReplacer: SelectionReplacer by inject()
 
-    /** Where text was last selected; the focused field may not be it (read-only text has no focus). */
-    private var lastSelectionSource: AccessibilityNodeInfo? = null
-
-    private val buttonCallback = object : AccessibilityButtonController.AccessibilityButtonCallback() {
-        override fun onClicked(controller: AccessibilityButtonController) = openSheet()
-    }
+    private var button: KeyboardButton? = null
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        accessibilityButtonController.registerAccessibilityButtonCallback(buttonCallback)
+        button = KeyboardButton(this, onPress = ::openSheet)
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent) {
-        if (event.eventType == AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED) {
-            event.source?.let { lastSelectionSource = it }
-        }
-    }
+    override fun onAccessibilityEvent(event: AccessibilityEvent) = updateButton()
 
     override fun onInterrupt() = Unit
 
     override fun onDestroy() {
-        accessibilityButtonController.unregisterAccessibilityButtonCallback(buttonCallback)
+        button?.hide()
+        button = null
         selectionReplacer.clear()
-        lastSelectionSource = null
         super.onDestroy()
     }
 
+    private fun updateButton() {
+        val button = button ?: return
+        val keyboardTop = keyboardTop()
+        val field = findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
+            ?.let { TypingField(it.packageName?.toString(), it.isEditable, it.isPassword) }
+        if (keyboardTop != null && field?.offersButton(ownPackage = packageName) == true) {
+            button.showAbove(keyboardTop)
+        } else {
+            button.hide()
+        }
+    }
+
+    /** Top edge of the keyboard on screen, or null when no keyboard is showing. */
+    private fun keyboardTop(): Int? = windows
+        .firstOrNull { it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD }
+        ?.let { keyboard -> Rect().also(keyboard::getBoundsInScreen).top }
+
     private fun openSheet() {
-        val found = findSelection()
-        if (found == null) {
-            Toast.makeText(this, R.string.accessibility_no_selection, Toast.LENGTH_SHORT).show()
+        val node = findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
+        val selection = node?.selectionOrAll()
+        if (selection == null) {
+            Toast.makeText(this, R.string.accessibility_no_text, Toast.LENGTH_SHORT).show()
             return
         }
-        val (node, selection) = found
         selectionReplacer.hold(NodeEditableField(node), selection)
+        // The sheet takes focus, so the keyboard and the button go away until the user types again.
+        button?.hide()
         startActivity(
             ProcessTextActivity.accessibilityIntent(this, selection.selectedText, readOnly = !selection.editable),
         )
     }
 
-    private fun findSelection(): Pair<AccessibilityNodeInfo, TextSelection>? {
-        val focused = rootInActiveWindow?.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
-        return listOfNotNull(focused, lastSelectionSource)
-            .firstNotNullOfOrNull { node -> node.selection()?.let { node to it } }
-    }
-
-    /** The node's current selection; refreshed first, since it may have changed since we got it. */
-    private fun AccessibilityNodeInfo.selection(): TextSelection? {
+    /** The field's selection, or all its text; refreshed first, since it may have changed since. */
+    private fun AccessibilityNodeInfo.selectionOrAll(): TextSelection? {
         if (!refresh() || isPassword) return null
-        return TextSelection.of(text, textSelectionStart, textSelectionEnd, editable = isEditable)
+        // An empty field reports its hint as its text.
+        val text = text.takeUnless { isShowingHintText }
+        return TextSelection.selectionOrAll(text, textSelectionStart, textSelectionEnd, editable = isEditable)
     }
 
     private class NodeEditableField(private val node: AccessibilityNodeInfo) : EditableField {

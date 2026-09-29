@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Selection changes tell the service where text was last selected; nothing else is listened to. -->
+<!-- Window and focus changes tell the service when the keyboard is up for a text field, so it can
+     show its button only then. Nothing else is listened to. -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:accessibilityEventTypes="typeViewTextSelectionChanged"
+    android:accessibilityEventTypes="typeWindowsChanged|typeWindowStateChanged|typeViewFocused"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:accessibilityFlags="flagRequestAccessibilityButton"
+    android:accessibilityFlags="flagRetrieveInteractiveWindows"
     android:canRetrieveWindowContent="true"
     android:description="@string/accessibility_service_description"
     android:isAccessibilityTool="false"
